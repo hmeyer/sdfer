@@ -44,8 +44,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
         vec2 p = (-iResolution.xy + 2.0*fragCoord)/iResolution.y;
         #endif
  
-        vec3 ro = vec3(0.0,4.0,8.0);
-        vec3 rd = normalize(vec3(p-vec2(0.0,1.8),-3.5));
+        vec3 ro = vec3(0.0,0.0,8.0);
+        vec3 rd = normalize(vec3(p-vec2(0.0,0.0),-3.5));
 
         float t = 0.0;
         for( int i=0; i<64; i++ )

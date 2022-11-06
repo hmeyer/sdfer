@@ -48,20 +48,48 @@ pub fn start() -> Result<(), JsValue> {
         let shader_canvas = shader_canvas.clone();
         let world_transform = world_transform.clone();
         let closure = Closure::<dyn FnMut(_)>::new(move |event: web_sys::WheelEvent| {
-            event.prevent_default();
             let mut world_transform = world_transform.borrow_mut();
-            *world_transform = world_transform.append_translation(&na::Vector3::new(
+            world_transform.prepend_translation_mut(&na::Vector3::new(
                 0.,
                 0.,
-                (event.delta_y() / 100.0) as f32,
+                (-event.delta_y() / 100.0) as f32,
             ));
-            info!("wheel: {}", world_transform);
             let shader_canvas = shader_canvas.borrow();
             shader_canvas
                 .uniform_matrix4fv("iWorldTransform", world_transform.transpose().as_slice());
             shader_canvas.draw();
         });
         canvas.add_event_listener_with_callback("wheel", closure.as_ref().unchecked_ref())?;
+        closure.forget();
+    }
+    {
+        let shader_canvas = shader_canvas.clone();
+        let world_transform = world_transform.clone();
+        let closure = Closure::<dyn FnMut(_)>::new(move |event: web_sys::MouseEvent| {
+            let mut world_transform = world_transform.borrow_mut();
+            match event.buttons() {
+                1 => {
+                    *world_transform *= na::Matrix4::<f32>::from_euler_angles(
+                        event.movement_y() as f32 / 100.0,
+                        event.movement_x() as f32 / 100.0,
+                        0.,
+                    )
+                }
+
+                4 => world_transform.prepend_translation_mut(&na::Vector3::new(
+                    -event.movement_x() as f32 / 100.0,
+                    event.movement_y() as f32 / 100.0,
+                    0.,
+                )),
+
+                _ => return,
+            }
+            let shader_canvas = shader_canvas.borrow();
+            shader_canvas
+                .uniform_matrix4fv("iWorldTransform", world_transform.transpose().as_slice());
+            shader_canvas.draw();
+        });
+        canvas.add_event_listener_with_callback("mousemove", closure.as_ref().unchecked_ref())?;
         closure.forget();
     }
 
