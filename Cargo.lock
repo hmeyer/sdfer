@@ -53,18 +53,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "example"
-version = "0.0.1"
-dependencies = [
- "console_log",
- "log",
- "nalgebra",
- "shadercanvas",
- "wasm-bindgen",
- "web-sys",
-]
-
-[[package]]
 name = "futures"
 version = "0.3.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -375,10 +363,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
+name = "sdfer"
+version = "0.0.1"
+dependencies = [
+ "console_log",
+ "log",
+ "nalgebra",
+ "shadercanvas",
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
 name = "shadercanvas"
-version = "0.0.6"
+version = "0.0.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b19b02dcd361680e77c33b71a47fa7d1fa313d23b32a0c2e9ad5d70396972150"
+checksum = "20a9b701426c99a4043da98429c8ba3c150ab2ad0237798dd5bb39ae9b197c39"
 dependencies = [
  "js-sys",
  "wasm-bindgen",

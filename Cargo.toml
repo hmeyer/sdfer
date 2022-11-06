@@ -8,7 +8,7 @@ edition = "2018"
 crate-type = ["cdylib"]
 
 [dependencies]
-shadercanvas = "0.0.6"
+shadercanvas = "0.0.10"
 wasm-bindgen = "0.2.83"
 log = "0.4"
 console_log = { version = "0.2", features = ["color"], optional = true }
@@ -18,7 +18,9 @@ nalgebra = "0.31"
 version = "0.3.4"
 features = [
   'Document',
+  'Event',
   'MouseEvent',
+  'WheelEvent',
 ]
 
 [features]

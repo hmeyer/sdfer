@@ -22,7 +22,7 @@ impl Object for ExactBox {
         "#])
     }
     fn expression(&self) -> String {
-        format!("Box(p, vec3({:.8}, {:.8}, {:.8}));", self.size[0], self.size[1], self.size[2])
+        format!("Box(p, vec3({:.8}, {:.8}, {:.8}))", self.size[0], self.size[1], self.size[2])
     }
 }
 
@@ -49,6 +49,6 @@ impl Object for RoundBox {
         "#])
     }
     fn expression(&self) -> String {
-        format!("RoundBox(p, vec3({:.8}, {:.8}, {:.8}), {:.8});", self.size[0], self.size[1], self.size[2], self.radius)
+        format!("RoundBox(p, vec3({:.8}, {:.8}, {:.8}), {:.8})", self.size[0], self.size[1], self.size[2], self.radius)
     }
 }
