@@ -22,7 +22,10 @@ impl Object for ExactBox {
         "#])
     }
     fn expression(&self) -> String {
-        format!("Box(p, vec3({:.8}, {:.8}, {:.8}))", self.size[0], self.size[1], self.size[2])
+        format!(
+            "Box(p, vec3({:.8}, {:.8}, {:.8}))",
+            self.size[0], self.size[1], self.size[2]
+        )
     }
 }
 
@@ -30,7 +33,6 @@ pub struct RoundBox {
     size: na::Vector3<f32>,
     radius: f32,
 }
-
 
 impl RoundBox {
     pub fn new(size: na::Vector3<f32>, radius: f32) -> RoundBox {
@@ -49,6 +51,9 @@ impl Object for RoundBox {
         "#])
     }
     fn expression(&self) -> String {
-        format!("RoundBox(p, vec3({:.8}, {:.8}, {:.8}), {:.8})", self.size[0], self.size[1], self.size[2], self.radius)
+        format!(
+            "RoundBox(p, vec3({:.8}, {:.8}, {:.8}), {:.8})",
+            self.size[0], self.size[1], self.size[2], self.radius
+        )
     }
 }
