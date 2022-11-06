@@ -26,13 +26,13 @@ pub fn start() -> Result<(), JsValue> {
     let shader_canvas = Rc::new(RefCell::new(ShaderCanvas::new(canvas.clone())?));
 
 
-    let object = object::Sphere::new(1.0);
+    // let object = object::Sphere::new(1.0);
     let object = object::RoundBox::new(na::Vector3::new(0.4, 0.6, 1.0), 0.2);
     let shader = renderer::generate_renderer_shader(&object);
     info!("setting shader:\n{}", shader);
     shader_canvas.borrow_mut().set_shader(&shader)?;
 
-    let mut world_transform = Rc::new(RefCell::new(na::Matrix4::<f32>::identity()));
+    let world_transform = Rc::new(RefCell::new(na::Matrix4::<f32>::identity()));
     shader_canvas.borrow().uniform_matrix4fv("iWorldTransform", world_transform.borrow().as_slice());
 
 
