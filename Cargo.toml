@@ -1,0 +1,25 @@
+[package]
+name = "sdfer"
+version = "0.0.1"
+authors = ["Henning Meyer <tutmann@gmail.com>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+shadercanvas = "0.0.6"
+wasm-bindgen = "0.2.83"
+log = "0.4"
+console_log = { version = "0.2", features = ["color"], optional = true }
+nalgebra = "0.31"
+
+[dependencies.web-sys]
+version = "0.3.4"
+features = [
+  'Document',
+  'MouseEvent',
+]
+
+[features]
+default = ["console_log"]
