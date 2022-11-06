@@ -27,7 +27,7 @@ pub fn start() -> Result<(), JsValue> {
     let sphere = Box::new(object::Sphere::new(1.0));
     let rbox1 = Box::new(object::RoundBox::new(na::Vector3::new(0.4, 0.6, 1.0), 0.2));
     let rbox2 = Box::new(object::RoundBox::new(na::Vector3::new(1.0, 0.4, 0.6), 0.2));
-    let object = object::Intersection::new(vec![sphere, rbox1, rbox2])?;
+    let object = object::Union::new(vec![sphere, rbox1, rbox2])?;
     let shader = renderer::generate_renderer_shader(&object);
     info!("setting shader:\n{}", shader);
     shader_canvas.borrow_mut().set_shader(&shader)?;

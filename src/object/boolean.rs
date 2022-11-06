@@ -30,7 +30,7 @@ where
                 .map(|_| ")")
                 .collect::<Vec<_>>()
                 .join("");
-            let mut code = format!(
+            let code = format!(
                 "float {}{}({}) {{
                 return {expr_begin}{expr_mid}{expr_end};
             }}",
