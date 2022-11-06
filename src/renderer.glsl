@@ -1,6 +1,6 @@
 // https://www.shadertoy.com/view/lt3BW2
 
-#define AA 2
+#define AA 0
 
 
 // https://iquilezles.org/articles/normalsSDF
