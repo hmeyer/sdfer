@@ -46,12 +46,12 @@ where
 
         code_set
     }
-    fn expression(&self) -> String {
+    fn expression(&self, p: &str) -> String {
         if self.get_children().len() == 1 {
-            return self.get_children()[0].expression();
+            return self.get_children()[0].expression(p);
         }
         let child_exps = (self.get_children().iter())
-            .map(|c| c.expression())
+            .map(|c| c.expression(p))
             .collect::<Vec<_>>()
             .join(", ");
         return format!(
@@ -137,11 +137,11 @@ impl Object for Difference {
         c.extend(self.b.static_code());
         c
     }
-    fn expression(&self) -> String {
+    fn expression(&self, p: &str) -> String {
         format!(
             "opDifference({}, {})",
-            self.a.expression(),
-            self.b.expression()
+            self.a.expression(p),
+            self.b.expression(p)
         )
     }
 }

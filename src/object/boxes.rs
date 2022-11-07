@@ -1,3 +1,4 @@
+use super::shader_vec3;
 use crate::object::Object;
 use std::collections::HashSet;
 
@@ -22,11 +23,8 @@ impl Object for ExactBox {
         "#
         .to_string()])
     }
-    fn expression(&self) -> String {
-        format!(
-            "Box(p, vec3({:.8}, {:.8}, {:.8}))",
-            self.size[0], self.size[1], self.size[2]
-        )
+    fn expression(&self, p: &str) -> String {
+        format!("Box({}, {}))", p, shader_vec3(&self.size))
     }
 }
 
@@ -52,10 +50,12 @@ impl Object for RoundBox {
         "#
         .to_string()])
     }
-    fn expression(&self) -> String {
+    fn expression(&self, p: &str) -> String {
         format!(
-            "RoundBox(p, vec3({:.8}, {:.8}, {:.8}), {:.8})",
-            self.size[0], self.size[1], self.size[2], self.radius
+            "RoundBox({}, {}, {:.8})",
+            p,
+            shader_vec3(&self.size),
+            self.radius
         )
     }
 }

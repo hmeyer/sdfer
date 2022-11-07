@@ -11,7 +11,7 @@ impl Sphere {
 }
 
 impl Object for Sphere {
-    fn expression(&self) -> String {
-        format!("length(p) - {:.8}", self.radius)
+    fn expression(&self, p: &str) -> String {
+        format!("length({}) - {:.8}", p, self.radius)
     }
 }

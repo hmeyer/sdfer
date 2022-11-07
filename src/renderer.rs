@@ -11,7 +11,7 @@ pub fn generate_renderer_shader(obj: &dyn Object) -> String {
         return {};
     }}
     ",
-        obj.expression()
+        obj.expression("p")
     );
     let static_code = obj
         .static_code()
