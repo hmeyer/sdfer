@@ -1,5 +1,6 @@
 use crate::object::Object;
 use std::collections::HashSet;
+use std::ops::Range;
 
 trait BinaryBoolean {
     fn get_children(&self) -> &[Box<dyn Object>];
@@ -21,7 +22,6 @@ where
                 .map(|i| format!("float d{}", i))
                 .collect::<Vec<_>>()
                 .join(", ");
-            // TODO: construct a binary tree like expression.
             let expr_begin = (0..self.get_children().len() - 1)
                 .map(|i| format!("{}(d{}", self.get_op(), i))
                 .collect::<Vec<_>>()
