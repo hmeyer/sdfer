@@ -1,6 +1,5 @@
 use crate::object::Object;
 use std::collections::HashSet;
-use std::ops::Range;
 
 trait BinaryBoolean {
     fn get_children(&self) -> &[Box<dyn Object>];
@@ -113,35 +112,32 @@ impl BinaryBoolean for Intersection {
     }
 }
 
-pub struct Difference {
-    a: Box<dyn Object>,
-    b: Box<dyn Object>,
+
+struct Negation {
+    object: Box<dyn Object>,
 }
 
-impl Difference {
-    pub fn new(a: Box<dyn Object>, b: Box<dyn Object>) -> Difference {
-        Difference { a, b }
-    }
-}
-
-impl Object for Difference {
+impl Object for Negation {
     fn static_code(&self) -> HashSet<String> {
-        let mut c = HashSet::from([r#"
-        float opDifference( float d1, float d2 )
-        {
-            return max(-d1,d2);
-        }
-        "#
-        .to_string()]);
-        c.extend(self.a.static_code());
-        c.extend(self.b.static_code());
-        c
+        self.object.static_code()
     }
     fn expression(&self, p: &str) -> String {
-        format!(
-            "opDifference({}, {})",
-            self.a.expression(p),
-            self.b.expression(p)
-        )
+        format!("-({})", self.object.expression(p))
     }
+}
+
+pub struct Difference {}
+
+impl Difference {
+pub fn new(mut children: Vec<Box<dyn Object>>) -> Result<Intersection, String> {
+    if children.len() == 0 {
+        return Err("Empty children for Difference.".to_string());
+    }
+    let mut new_children = vec![children.swap_remove(0)];
+    while(!children.is_empty()) {
+        let object = children.pop().unwrap();
+        new_children.push(Box::new(Negation { object }));
+    }
+    Intersection::new(new_children)
+}
 }
