@@ -134,7 +134,7 @@ pub fn new(mut children: Vec<Box<dyn Object>>) -> Result<Intersection, String> {
         return Err("Empty children for Difference.".to_string());
     }
     let mut new_children = vec![children.swap_remove(0)];
-    while(!children.is_empty()) {
+    while !children.is_empty() {
         let object = children.pop().unwrap();
         new_children.push(Box::new(Negation { object }));
     }
