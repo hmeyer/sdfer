@@ -30,9 +30,11 @@ where
                 .collect::<Vec<_>>()
                 .join("");
             let code = format!(
-                "float {}{}({}) {{
-                return {expr_begin}{expr_mid}{expr_end};
-            }}",
+                "
+float {}{}({}) {{
+    return {expr_begin}{expr_mid}{expr_end};
+}}
+",
                 self.get_fn_name(),
                 self.get_children().len(),
                 params,
@@ -42,7 +44,6 @@ where
             );
             code_set.insert(code);
         }
-
         code_set
     }
     fn expression(&self, p: &str) -> String {
@@ -112,7 +113,6 @@ impl BinaryBoolean for Intersection {
     }
 }
 
-
 struct Negation {
     object: Box<dyn Object>,
 }
@@ -129,15 +129,15 @@ impl Object for Negation {
 pub struct Difference {}
 
 impl Difference {
-pub fn new(mut children: Vec<Box<dyn Object>>) -> Result<Intersection, String> {
-    if children.len() == 0 {
-        return Err("Empty children for Difference.".to_string());
+    pub fn new(mut children: Vec<Box<dyn Object>>) -> Result<Intersection, String> {
+        if children.len() == 0 {
+            return Err("Empty children for Difference.".to_string());
+        }
+        let mut new_children = vec![children.swap_remove(0)];
+        while !children.is_empty() {
+            let object = children.pop().unwrap();
+            new_children.push(Box::new(Negation { object }));
+        }
+        Intersection::new(new_children)
     }
-    let mut new_children = vec![children.swap_remove(0)];
-    while !children.is_empty() {
-        let object = children.pop().unwrap();
-        new_children.push(Box::new(Negation { object }));
-    }
-    Intersection::new(new_children)
-}
 }

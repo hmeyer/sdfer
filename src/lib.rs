@@ -27,10 +27,12 @@ pub fn start() -> Result<(), JsValue> {
     let sphere = Box::new(object::Sphere::new(1.0));
     let sphere = Box::new(object::Scale::new(sphere, na::Vector3::new(0.5, 0.8, 1.5)));
     let rbox1 = Box::new(object::RoundBox::new(na::Vector3::new(0.4, 0.6, 1.0), 0.2));
+    let rbox1 = Box::new(object::ExactBox::new(na::Vector3::new(0.4, 0.6, 1.0)));
     let rbox1 = Box::new(object::Rotate::from_euler(rbox1, 0.5, 0., 0.));
+    let diff = Box::new(object::Difference::new(vec![rbox1, sphere])?);
     let rbox2 = Box::new(object::RoundBox::new(na::Vector3::new(1.0, 0.4, 0.6), 0.2));
     let rbox2 = Box::new(object::Translate::new(rbox2, na::Vector3::new(1., 1., 1.)));
-    let object = object::Union::new(vec![sphere, rbox1, rbox2])?;
+    let object = object::Union::new(vec![diff, rbox2])?;
     let shader = renderer::generate_renderer_shader(&object);
     info!("setting shader:\n{}", shader);
     shader_canvas.borrow_mut().set_shader(&shader)?;

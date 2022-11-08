@@ -15,16 +15,15 @@ impl ExactBox {
 impl Object for ExactBox {
     fn static_code(&self) -> HashSet<String> {
         HashSet::from([r#"
-        float Box( vec3 p, vec3 b )
-        {
-          vec3 q = abs(p) - b;
-          return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
-        }
-        "#
+float Box( vec3 p, vec3 b ) {
+    vec3 q = abs(p) - b;
+    return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
+}
+"#
         .to_string()])
     }
     fn expression(&self, p: &str) -> String {
-        format!("Box({}, {}))", p, shader_vec3(&self.size))
+        format!("Box({}, {})", p, shader_vec3(&self.size))
     }
 }
 
@@ -42,12 +41,11 @@ impl RoundBox {
 impl Object for RoundBox {
     fn static_code(&self) -> HashSet<String> {
         HashSet::from([r#"
-        float RoundBox( vec3 p, vec3 b, float r )
-        {
-          vec3 q = abs(p) - b;
-          return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0) - r;
-        }
-        "#
+float RoundBox( vec3 p, vec3 b, float r ) {
+    vec3 q = abs(p) - b;
+    return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0) - r;
+}
+"#
         .to_string()])
     }
     fn expression(&self, p: &str) -> String {
