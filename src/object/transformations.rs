@@ -8,15 +8,15 @@ pub struct Translate {
 }
 
 impl Translate {
-    fn static_code(&self) -> HashSet<String> {
-        self.object.static_code()
-    }
     pub fn new(object: Box<dyn Object>, vector: na::Vector3<f32>) -> Translate {
         Translate { object, vector }
     }
 }
 
 impl Object for Translate {
+    fn static_code(&self) -> HashSet<String> {
+        self.object.static_code()
+    }
     fn expression(&self, p: &str) -> String {
         self.object
             .expression(&format!("({}) - {}", p, shader_vec3(&self.vector)))
