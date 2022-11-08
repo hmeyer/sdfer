@@ -2,9 +2,7 @@ use std::collections::HashSet;
 
 pub trait Object {
     fn expression(&self, p: &str) -> String;
-    fn static_code(&self) -> HashSet<String> {
-        HashSet::new()
-    }
+    fn static_code(&self) -> HashSet<String>;
 }
 
 fn shader_vec3(v: &na::Vector3<f32>) -> String {
