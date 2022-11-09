@@ -31,7 +31,7 @@ pub fn start() -> Result<(), JsValue> {
     let diff = Box::new(object::Difference::new(vec![rbox1, sphere])?);
     let rbox2 = Box::new(object::RoundBox::new(na::Vector3::new(1.0, 0.4, 0.6), 0.2));
     let rbox2 = Box::new(object::Translate::new(rbox2, na::Vector3::new(1., 1., 1.)));
-    let object = object::Union::new_with_smoothness(vec![diff, rbox2], 0.1)?;
+    let object = object::Union::new_with_smoothness(vec![diff, rbox2], 0.2)?;
     let shader = renderer::generate_renderer_shader(&object);
     info!("setting shader:\n{}", shader);
     shader_canvas.borrow_mut().set_shader(&shader)?;

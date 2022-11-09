@@ -8,6 +8,7 @@ enum UnionKind {
     Root,            // Supports only two objects.
     Exponential,     // smoothness = 10
     Chamfer,
+    Stairs(usize),
 }
 
 impl UnionKind {
@@ -19,6 +20,7 @@ impl UnionKind {
             UnionKind::Root => format!("opSmoothMinRoot{}", num_objects),
             UnionKind::Exponential => format!("opSmoothMinExponential{}", num_objects),
             UnionKind::Chamfer => format!("opChamferMin{}", num_objects),
+            UnionKind::Stairs(n) => format!("op{}StairsMin{}", n, num_objects),
         }
     }
     fn make_params(num_objects: usize) -> Vec<String> {
@@ -48,6 +50,9 @@ impl UnionKind {
             ),
             UnionKind::Chamfer => {
                 make_chamfer_min_function(&self.function_name(num_objects), num_objects)
+            }
+            UnionKind::Stairs(n) => {
+                make_stairs_min_function(&self.function_name(num_objects), num_objects, *n)
             }
         }
     }
@@ -133,6 +138,24 @@ float {name}(float d0, float d1, float k) {{
     )
 }
 
+fn make_stairs_min_function(function_name: &str, num_objects: usize, n: usize) -> String {
+    if num_objects != 2 {
+        panic!("Round min requires exactly two arguments.");
+    }
+    format!(
+        "
+float {name}(float d0, float d1, float k) {{
+    float n = {n}.;
+    float s = k / n;
+    float u = d1 - k;
+    return min(min(d0, d1), 0.5 * (u + d0 + abs((mod(u - d0 + s, 2. * s)) - s)));
+}}
+",
+        name = function_name,
+        n = n,
+    )
+}
+
 fn make_exponential_min_function(function_name: &str, params: &[String]) -> String {
     if params.len() < 2 {
         panic!("Exponential min requires at least two arguments.");
@@ -174,7 +197,7 @@ impl Union {
         let kind = if smoothness == 0.0 {
             UnionKind::Default
         } else {
-            UnionKind::Chamfer
+            UnionKind::Stairs(4)
         };
         Ok(Union {
             children,
