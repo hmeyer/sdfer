@@ -3,7 +3,8 @@ use std::collections::HashSet;
 
 enum UnionKind {
     Default,
-    Polynomial, // Supports only two objects.
+    Polynomial,      // Supports only two objects.
+    CubicPolynomial, // Supports only two objects.
 }
 
 impl UnionKind {
@@ -11,6 +12,7 @@ impl UnionKind {
         match self {
             UnionKind::Default => format!("opMin{}", num_objects),
             UnionKind::Polynomial => format!("opSmoothMinPolynomial{}", num_objects),
+            UnionKind::CubicPolynomial => format!("opSmoothMinCubicPolynomial{}", num_objects),
         }
     }
     fn make_params(num_objects: usize) -> Vec<String> {
@@ -27,6 +29,9 @@ impl UnionKind {
             ),
             UnionKind::Polynomial => {
                 make_polynomial_min_function(&self.function_name(num_objects), num_objects)
+            }
+            UnionKind::CubicPolynomial => {
+                make_cubic_polynomial_min_function(&self.function_name(num_objects), num_objects)
             }
         }
     }
@@ -55,13 +60,28 @@ return {expr_begin}, {last_param}{expr_end};
 
 fn make_polynomial_min_function(function_name: &str, num_objects: usize) -> String {
     if num_objects != 2 {
-        panic!("Polynomial min required exactly two arguments.");
+        panic!("Polynomial min requires exactly two arguments.");
     }
     format!(
         "
 float {name}(float d1, float d2, float k) {{
     float h = max(k-abs(d1-d2),0.0);
     return min(d1, d2) - h*h*0.25/k;    
+}}
+",
+        name = function_name
+    )
+}
+
+fn make_cubic_polynomial_min_function(function_name: &str, num_objects: usize) -> String {
+    if num_objects != 2 {
+        panic!("Cubic polynomial min requires exactly two arguments.");
+    }
+    format!(
+        "
+float {name}(float d1, float d2, float k) {{
+    float h = max(k-abs(d1-d2),0.0) / k;
+    return min(d1, d2) - h*h*h*k*(1./6.);    
 }}
 ",
         name = function_name
@@ -88,7 +108,7 @@ impl Union {
         let kind = if smoothness == 0.0 {
             UnionKind::Default
         } else {
-            UnionKind::Polynomial
+            UnionKind::CubicPolynomial
         };
         Ok(Union {
             children,
