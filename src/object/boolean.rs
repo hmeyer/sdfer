@@ -5,7 +5,8 @@ enum UnionKind {
     Default,
     Polynomial,      // Supports only two objects.
     CubicPolynomial, // Supports only two objects.
-    Exponential,  // smoothness = 10
+    Root,            // Supports only two objects.
+    Exponential,     // smoothness = 10
 }
 
 impl UnionKind {
@@ -14,6 +15,7 @@ impl UnionKind {
             UnionKind::Default => format!("opMin{}", num_objects),
             UnionKind::Polynomial => format!("opSmoothMinPolynomial{}", num_objects),
             UnionKind::CubicPolynomial => format!("opSmoothMinCubicPolynomial{}", num_objects),
+            UnionKind::Root => format!("opSmoothMinRoot{}", num_objects),
             UnionKind::Exponential => format!("opSmoothMinExponential{}", num_objects),
         }
     }
@@ -29,15 +31,19 @@ impl UnionKind {
                 &self.function_name(num_objects),
                 &UnionKind::make_params(num_objects),
             ),
-            UnionKind::Polynomial =>
-                make_polynomial_min_function(&self.function_name(num_objects), num_objects),
-            UnionKind::CubicPolynomial =>
-                make_cubic_polynomial_min_function(&self.function_name(num_objects), num_objects),
+            UnionKind::Polynomial => {
+                make_polynomial_min_function(&self.function_name(num_objects), num_objects)
+            }
+            UnionKind::CubicPolynomial => {
+                make_cubic_polynomial_min_function(&self.function_name(num_objects), num_objects)
+            }
+            UnionKind::Root => {
+                make_root_min_function(&self.function_name(num_objects), num_objects)
+            }
             UnionKind::Exponential => make_exponential_min_function(
                 &self.function_name(num_objects),
                 &UnionKind::make_params(num_objects),
             ),
-    
         }
     }
 }
@@ -93,6 +99,21 @@ float {name}(float d1, float d2, float k) {{
     )
 }
 
+fn make_root_min_function(function_name: &str, num_objects: usize) -> String {
+    if num_objects != 2 {
+        panic!("Cubic polynomial min requires exactly two arguments.");
+    }
+    format!(
+        "
+float {name}(float d0, float d1, float k) {{
+    float h = d0 - d1;
+    return 0.5 * ((d0 + d1) - sqrt(h *h + k));
+}}
+",
+        name = function_name
+    )
+}
+
 fn make_exponential_min_function(function_name: &str, params: &[String]) -> String {
     if params.len() < 2 {
         panic!("Exponential min requires at least two arguments.");
@@ -105,7 +126,11 @@ float {name}(float {params}, float k) {{
 }}
 ",
         name = function_name,
-        expr = params.iter().map(|p| format!("exp2(-k * {})", p)).collect::<Vec<_>>().join(" + "),
+        expr = params
+            .iter()
+            .map(|p| format!("exp2(-k * {})", p))
+            .collect::<Vec<_>>()
+            .join(" + "),
         params = params.join(", float "),
     )
 }
@@ -130,7 +155,7 @@ impl Union {
         let kind = if smoothness == 0.0 {
             UnionKind::Default
         } else {
-            UnionKind::Exponential
+            UnionKind::Root
         };
         Ok(Union {
             children,
