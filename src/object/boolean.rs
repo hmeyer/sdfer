@@ -7,6 +7,7 @@ enum UnionKind {
     CubicPolynomial, // Supports only two objects.
     Root,            // Supports only two objects.
     Exponential,     // smoothness = 10
+    Chamfer,
 }
 
 impl UnionKind {
@@ -17,6 +18,7 @@ impl UnionKind {
             UnionKind::CubicPolynomial => format!("opSmoothMinCubicPolynomial{}", num_objects),
             UnionKind::Root => format!("opSmoothMinRoot{}", num_objects),
             UnionKind::Exponential => format!("opSmoothMinExponential{}", num_objects),
+            UnionKind::Chamfer => format!("opChamferMin{}", num_objects),
         }
     }
     fn make_params(num_objects: usize) -> Vec<String> {
@@ -44,6 +46,9 @@ impl UnionKind {
                 &self.function_name(num_objects),
                 &UnionKind::make_params(num_objects),
             ),
+            UnionKind::Chamfer => {
+                make_chamfer_min_function(&self.function_name(num_objects), num_objects)
+            }
         }
     }
 }
@@ -114,6 +119,20 @@ float {name}(float d0, float d1, float k) {{
     )
 }
 
+fn make_chamfer_min_function(function_name: &str, num_objects: usize) -> String {
+    if num_objects != 2 {
+        panic!("Chamfer min requires exactly two arguments.");
+    }
+    format!(
+        "
+float {name}(float d0, float d1, float k) {{
+    return min(min(d0, d1), (d0 - k + d1) * sqrt(0.5));
+}}
+",
+        name = function_name
+    )
+}
+
 fn make_exponential_min_function(function_name: &str, params: &[String]) -> String {
     if params.len() < 2 {
         panic!("Exponential min requires at least two arguments.");
@@ -155,7 +174,7 @@ impl Union {
         let kind = if smoothness == 0.0 {
             UnionKind::Default
         } else {
-            UnionKind::Root
+            UnionKind::Chamfer
         };
         Ok(Union {
             children,
