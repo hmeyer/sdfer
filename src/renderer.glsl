@@ -1,6 +1,6 @@
 // https://www.shadertoy.com/view/lt3BW2
 
-#define AA 0
+#define AA 1
 
 
 // https://iquilezles.org/articles/normalsSDF
@@ -32,6 +32,7 @@ float calcSoftshadow( in vec3 ro, in vec3 rd, float tmin, float tmax, const floa
 void mainImage( out vec4 fragColor, in vec2 fragCoord )   
 {
    vec3 tot = vec3(0.0);
+   float required_detail = 0.5 / max(iResolution.x, iResolution.y);
     
     #if AA>1
     for( int m=0; m<AA; m++ )
@@ -47,12 +48,12 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
         vec3 ro = vec3(0.0,0.0,8.0);
         vec3 rd = normalize(vec3(p-vec2(0.0,0.0),-3.5));
 
-        float t = 0.0;
+        float t = 0.0001;
         for( int i=0; i<64; i++ )
         {
             vec3 p = ro + t*rd;
             float h = map(p);
-            if( abs(h)<0.001 || t>11.0 ) break;
+            if( abs(h / t) < required_detail || t>11.0 ) break;
             t += h * 0.5;
         }
 
