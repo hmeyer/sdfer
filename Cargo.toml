@@ -31,3 +31,8 @@ features = [
 
 [features]
 default = ["console_log"]
+
+[profile.release]
+lto = "fat"         # turn on Link-Time Optimizations
+codegen-units = 1   # trade compile time with maximum optimization
+opt-level = "z"     # optimize for size
