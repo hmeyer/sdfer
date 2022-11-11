@@ -2,6 +2,7 @@ use super::{shader_mat3, shader_vec3};
 use crate::primitive::Primitive;
 use std::collections::HashSet;
 
+#[derive(Clone)]
 pub struct Translate {
     primitive: Box<dyn Primitive>,
     vector: na::Vector3<f32>,
@@ -23,6 +24,7 @@ impl Primitive for Translate {
     }
 }
 
+#[derive(Clone)]
 pub struct Rotate {
     primitive: Box<dyn Primitive>,
     matrix: na::Matrix3<f32>,
@@ -49,6 +51,7 @@ impl Primitive for Rotate {
     }
 }
 
+#[derive(Clone)]
 pub struct Scale {
     primitive: Box<dyn Primitive>,
     scale: na::Vector3<f32>,

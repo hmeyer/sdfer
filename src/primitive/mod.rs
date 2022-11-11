@@ -1,9 +1,31 @@
 use std::collections::HashSet;
 
-pub trait Primitive {
+pub trait Primitive : PrimitiveClone {
     fn expression(&self, p: &str) -> String;
     fn static_code(&self) -> HashSet<String>;
 }
+
+pub trait PrimitiveClone {
+    /// Clone ```Box<Primitive>```.
+    fn clone_box(&self) -> Box<dyn Primitive>;
+}
+
+impl<T> PrimitiveClone for T
+where
+    T: 'static + Primitive + Clone,
+{
+    fn clone_box(&self) -> Box<dyn Primitive> {
+        Box::new(self.clone())
+    }
+}
+
+// We can now implement Clone manually by forwarding to clone_box.
+impl Clone for Box<dyn Primitive> {
+    fn clone(&self) -> Box<dyn Primitive> {
+        self.clone_box()
+    }
+}
+
 
 fn shader_vec3(v: &na::Vector3<f32>) -> String {
     format!("vec3({:.8}, {:.8}, {:.8})", v[0], v[1], v[2])

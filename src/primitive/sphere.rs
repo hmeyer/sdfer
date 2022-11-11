@@ -1,6 +1,7 @@
 use crate::primitive::Primitive;
 use std::collections::HashSet;
 
+#[derive(Clone)]
 pub struct Sphere {
     radius: f32,
 }

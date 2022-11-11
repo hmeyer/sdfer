@@ -2,6 +2,7 @@ use super::shader_vec3;
 use crate::primitive::Primitive;
 use std::collections::HashSet;
 
+#[derive(Clone)]
 pub struct ExactBox {
     size: na::Vector3<f32>,
 }
@@ -27,6 +28,7 @@ float Box( vec3 p, vec3 b ) {
     }
 }
 
+#[derive(Clone)]
 pub struct RoundBox {
     size: na::Vector3<f32>,
     radius: f32,

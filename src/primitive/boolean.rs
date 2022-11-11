@@ -1,6 +1,7 @@
 use crate::primitive::Primitive;
 use std::collections::HashSet;
 
+#[derive(Clone)]
 enum UnionKind {
     Default,
     Polynomial,      // Supports only two primitives.
@@ -177,6 +178,7 @@ float {name}(float {params}, float k) {{
     )
 }
 
+#[derive(Clone)]
 pub struct Union {
     children: Vec<Box<dyn Primitive>>,
     smoothness: f32,
@@ -235,6 +237,7 @@ impl Primitive for Union {
     }
 }
 
+#[derive(Clone)]
 struct Negation {
     child: Box<dyn Primitive>,
 }
@@ -248,6 +251,7 @@ impl Primitive for Negation {
     }
 }
 
+#[derive(Clone)]
 pub struct Intersection {
     inner_union: Union,
 }
@@ -279,6 +283,7 @@ impl Primitive for Intersection {
     }
 }
 
+#[derive(Clone)]
 pub struct Difference {}
 
 impl Difference {
