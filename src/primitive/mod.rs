@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-pub trait Primitive : PrimitiveClone {
+pub trait Primitive: PrimitiveClone {
     fn expression(&self, p: &str) -> String;
     fn static_code(&self) -> HashSet<String>;
 }
@@ -25,7 +25,6 @@ impl Clone for Box<dyn Primitive> {
         self.clone_box()
     }
 }
-
 
 fn shader_vec3(v: &na::Vector3<f32>) -> String {
     format!("vec3({:.8}, {:.8}, {:.8})", v[0], v[1], v[2])

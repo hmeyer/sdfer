@@ -39,9 +39,10 @@ impl UnionKind {
             UnionKind::Polynomial => {
                 make_polynomial_min_function(&self.function_name(num_primitives), num_primitives)
             }
-            UnionKind::CubicPolynomial => {
-                make_cubic_polynomial_min_function(&self.function_name(num_primitives), num_primitives)
-            }
+            UnionKind::CubicPolynomial => make_cubic_polynomial_min_function(
+                &self.function_name(num_primitives),
+                num_primitives,
+            ),
             UnionKind::Root => {
                 make_root_min_function(&self.function_name(num_primitives), num_primitives)
             }
@@ -261,7 +262,7 @@ impl Intersection {
         Intersection::new_with_smoothness(children, 0.)
     }
     pub fn new_with_smoothness(
-        mut children: Vec<Box<dyn Primitive>>,
+        children: Vec<Box<dyn Primitive>>,
         smoothness: f32,
     ) -> Result<Intersection, String> {
         let neg_children = children
