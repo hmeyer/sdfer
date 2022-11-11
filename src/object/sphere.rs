@@ -1,4 +1,4 @@
-use crate::object::Object;
+use crate::object::Primitive;
 use std::collections::HashSet;
 
 pub struct Sphere {
@@ -11,7 +11,7 @@ impl Sphere {
     }
 }
 
-impl Object for Sphere {
+impl Primitive for Sphere {
     fn static_code(&self) -> HashSet<String> {
         HashSet::new()
     }

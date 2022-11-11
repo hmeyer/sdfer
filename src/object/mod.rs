@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-pub trait Object {
+pub trait Primitive {
     fn expression(&self, p: &str) -> String;
     fn static_code(&self) -> HashSet<String>;
 }

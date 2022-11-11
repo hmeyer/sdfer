@@ -1,5 +1,5 @@
 use super::shader_vec3;
-use crate::object::Object;
+use crate::object::Primitive;
 use std::collections::HashSet;
 
 pub struct ExactBox {
@@ -12,7 +12,7 @@ impl ExactBox {
     }
 }
 
-impl Object for ExactBox {
+impl Primitive for ExactBox {
     fn static_code(&self) -> HashSet<String> {
         HashSet::from([r#"
 float Box( vec3 p, vec3 b ) {
@@ -38,7 +38,7 @@ impl RoundBox {
     }
 }
 
-impl Object for RoundBox {
+impl Primitive for RoundBox {
     fn static_code(&self) -> HashSet<String> {
         HashSet::from([r#"
 float RoundBox( vec3 p, vec3 b, float r ) {

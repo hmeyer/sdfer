@@ -1,58 +1,58 @@
-use crate::object::Object;
+use crate::object::Primitive;
 use std::collections::HashSet;
 
 enum UnionKind {
     Default,
-    Polynomial,      // Supports only two objects.
-    CubicPolynomial, // Supports only two objects.
-    Root,            // Supports only two objects.
+    Polynomial,      // Supports only two primitives.
+    CubicPolynomial, // Supports only two primitives.
+    Root,            // Supports only two primitives.
     Exponential,     // smoothness = 10
     Chamfer,
     Stairs(usize),
 }
 
 impl UnionKind {
-    fn function_name(&self, num_objects: usize) -> String {
+    fn function_name(&self, num_primitives: usize) -> String {
         match self {
-            UnionKind::Default => format!("opMin{}", num_objects),
-            UnionKind::Polynomial => format!("opSmoothMinPolynomial{}", num_objects),
-            UnionKind::CubicPolynomial => format!("opSmoothMinCubicPolynomial{}", num_objects),
-            UnionKind::Root => format!("opSmoothMinRoot{}", num_objects),
-            UnionKind::Exponential => format!("opSmoothMinExponential{}", num_objects),
-            UnionKind::Chamfer => format!("opChamferMin{}", num_objects),
-            UnionKind::Stairs(n) => format!("op{}StairsMin{}", n, num_objects),
+            UnionKind::Default => format!("opMin{}", num_primitives),
+            UnionKind::Polynomial => format!("opSmoothMinPolynomial{}", num_primitives),
+            UnionKind::CubicPolynomial => format!("opSmoothMinCubicPolynomial{}", num_primitives),
+            UnionKind::Root => format!("opSmoothMinRoot{}", num_primitives),
+            UnionKind::Exponential => format!("opSmoothMinExponential{}", num_primitives),
+            UnionKind::Chamfer => format!("opChamferMin{}", num_primitives),
+            UnionKind::Stairs(n) => format!("op{}StairsMin{}", n, num_primitives),
         }
     }
-    fn make_params(num_objects: usize) -> Vec<String> {
-        (0..num_objects).map(|i| format!("d{}", i)).collect()
+    fn make_params(num_primitives: usize) -> Vec<String> {
+        (0..num_primitives).map(|i| format!("d{}", i)).collect()
     }
-    fn make_function(&self, num_objects: usize) -> String {
-        if num_objects < 2 {
+    fn make_function(&self, num_primitives: usize) -> String {
+        if num_primitives < 2 {
             panic!("Union function needs at least to objects.")
         }
         match self {
             UnionKind::Default => make_default_min_function(
-                &self.function_name(num_objects),
-                &UnionKind::make_params(num_objects),
+                &self.function_name(num_primitives),
+                &UnionKind::make_params(num_primitives),
             ),
             UnionKind::Polynomial => {
-                make_polynomial_min_function(&self.function_name(num_objects), num_objects)
+                make_polynomial_min_function(&self.function_name(num_primitives), num_primitives)
             }
             UnionKind::CubicPolynomial => {
-                make_cubic_polynomial_min_function(&self.function_name(num_objects), num_objects)
+                make_cubic_polynomial_min_function(&self.function_name(num_primitives), num_primitives)
             }
             UnionKind::Root => {
-                make_root_min_function(&self.function_name(num_objects), num_objects)
+                make_root_min_function(&self.function_name(num_primitives), num_primitives)
             }
             UnionKind::Exponential => make_exponential_min_function(
-                &self.function_name(num_objects),
-                &UnionKind::make_params(num_objects),
+                &self.function_name(num_primitives),
+                &UnionKind::make_params(num_primitives),
             ),
             UnionKind::Chamfer => {
-                make_chamfer_min_function(&self.function_name(num_objects), num_objects)
+                make_chamfer_min_function(&self.function_name(num_primitives), num_primitives)
             }
             UnionKind::Stairs(n) => {
-                make_stairs_min_function(&self.function_name(num_objects), num_objects, *n)
+                make_stairs_min_function(&self.function_name(num_primitives), num_primitives, *n)
             }
         }
     }
@@ -79,8 +79,8 @@ return {expr_begin}, {last_param}{expr_end};
     )
 }
 
-fn make_polynomial_min_function(function_name: &str, num_objects: usize) -> String {
-    if num_objects != 2 {
+fn make_polynomial_min_function(function_name: &str, num_primitives: usize) -> String {
+    if num_primitives != 2 {
         panic!("Polynomial min requires exactly two arguments.");
     }
     format!(
@@ -94,8 +94,8 @@ float {name}(float d1, float d2, float k) {{
     )
 }
 
-fn make_cubic_polynomial_min_function(function_name: &str, num_objects: usize) -> String {
-    if num_objects != 2 {
+fn make_cubic_polynomial_min_function(function_name: &str, num_primitives: usize) -> String {
+    if num_primitives != 2 {
         panic!("Cubic polynomial min requires exactly two arguments.");
     }
     format!(
@@ -109,8 +109,8 @@ float {name}(float d1, float d2, float k) {{
     )
 }
 
-fn make_root_min_function(function_name: &str, num_objects: usize) -> String {
-    if num_objects != 2 {
+fn make_root_min_function(function_name: &str, num_primitives: usize) -> String {
+    if num_primitives != 2 {
         panic!("Cubic polynomial min requires exactly two arguments.");
     }
     format!(
@@ -124,8 +124,8 @@ float {name}(float d0, float d1, float k) {{
     )
 }
 
-fn make_chamfer_min_function(function_name: &str, num_objects: usize) -> String {
-    if num_objects != 2 {
+fn make_chamfer_min_function(function_name: &str, num_primitives: usize) -> String {
+    if num_primitives != 2 {
         panic!("Chamfer min requires exactly two arguments.");
     }
     format!(
@@ -138,8 +138,8 @@ float {name}(float d0, float d1, float k) {{
     )
 }
 
-fn make_stairs_min_function(function_name: &str, num_objects: usize, n: usize) -> String {
-    if num_objects != 2 {
+fn make_stairs_min_function(function_name: &str, num_primitives: usize, n: usize) -> String {
+    if num_primitives != 2 {
         panic!("Round min requires exactly two arguments.");
     }
     format!(
@@ -178,17 +178,17 @@ float {name}(float {params}, float k) {{
 }
 
 pub struct Union {
-    children: Vec<Box<dyn Object>>,
+    children: Vec<Box<dyn Primitive>>,
     smoothness: f32,
     kind: UnionKind,
 }
 
 impl Union {
-    pub fn new(children: Vec<Box<dyn Object>>) -> Result<Union, String> {
+    pub fn new(children: Vec<Box<dyn Primitive>>) -> Result<Union, String> {
         Union::new_with_smoothness(children, 0.)
     }
     pub fn new_with_smoothness(
-        children: Vec<Box<dyn Object>>,
+        children: Vec<Box<dyn Primitive>>,
         smoothness: f32,
     ) -> Result<Union, String> {
         if children.len() < 2 {
@@ -207,7 +207,7 @@ impl Union {
     }
 }
 
-impl Object for Union {
+impl Primitive for Union {
     fn static_code(&self) -> HashSet<String> {
         let mut code_set = HashSet::new();
         for child in &self.children {
@@ -236,10 +236,10 @@ impl Object for Union {
 }
 
 struct Negation {
-    object: Box<dyn Object>,
+    object: Box<dyn Primitive>,
 }
 
-impl Object for Negation {
+impl Primitive for Negation {
     fn static_code(&self) -> HashSet<String> {
         self.object.static_code()
     }
@@ -253,16 +253,16 @@ pub struct Intersection {
 }
 
 impl Intersection {
-    pub fn new(children: Vec<Box<dyn Object>>) -> Result<Intersection, String> {
+    pub fn new(children: Vec<Box<dyn Primitive>>) -> Result<Intersection, String> {
         Intersection::new_with_smoothness(children, 0.)
     }
     pub fn new_with_smoothness(
-        mut children: Vec<Box<dyn Object>>,
+        mut children: Vec<Box<dyn Primitive>>,
         smoothness: f32,
     ) -> Result<Intersection, String> {
         let neg_children = children
             .into_iter()
-            .map(|object| Box::new(Negation { object: object }) as Box<dyn Object>)
+            .map(|object| Box::new(Negation { object: object }) as Box<dyn Primitive>)
             .collect();
         Ok(Intersection {
             object: Union::new_with_smoothness(neg_children, smoothness)?,
@@ -270,7 +270,7 @@ impl Intersection {
     }
 }
 
-impl Object for Intersection {
+impl Primitive for Intersection {
     fn static_code(&self) -> HashSet<String> {
         self.object.static_code()
     }
@@ -282,11 +282,11 @@ impl Object for Intersection {
 pub struct Difference {}
 
 impl Difference {
-    pub fn new(children: Vec<Box<dyn Object>>) -> Result<Intersection, String> {
+    pub fn new(children: Vec<Box<dyn Primitive>>) -> Result<Intersection, String> {
         Difference::new_with_smoothness(children, 0.)
     }
     pub fn new_with_smoothness(
-        mut children: Vec<Box<dyn Object>>,
+        mut children: Vec<Box<dyn Primitive>>,
         smoothness: f32,
     ) -> Result<Intersection, String> {
         if children.len() == 0 {
