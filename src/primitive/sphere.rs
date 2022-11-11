@@ -1,4 +1,4 @@
-use crate::object::Primitive;
+use crate::primitive::Primitive;
 use std::collections::HashSet;
 
 pub struct Sphere {

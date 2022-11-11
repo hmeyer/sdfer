@@ -1,4 +1,4 @@
-use crate::object::Primitive;
+use crate::primitive::Primitive;
 use std::collections::HashSet;
 
 enum UnionKind {
@@ -28,7 +28,7 @@ impl UnionKind {
     }
     fn make_function(&self, num_primitives: usize) -> String {
         if num_primitives < 2 {
-            panic!("Union function needs at least to objects.")
+            panic!("Union function needs at least to primitives.")
         }
         match self {
             UnionKind::Default => make_default_min_function(
@@ -236,20 +236,20 @@ impl Primitive for Union {
 }
 
 struct Negation {
-    object: Box<dyn Primitive>,
+    child: Box<dyn Primitive>,
 }
 
 impl Primitive for Negation {
     fn static_code(&self) -> HashSet<String> {
-        self.object.static_code()
+        self.child.static_code()
     }
     fn expression(&self, p: &str) -> String {
-        format!("-({})", self.object.expression(p))
+        format!("-({})", self.child.expression(p))
     }
 }
 
 pub struct Intersection {
-    object: Union,
+    inner_union: Union,
 }
 
 impl Intersection {
@@ -262,20 +262,20 @@ impl Intersection {
     ) -> Result<Intersection, String> {
         let neg_children = children
             .into_iter()
-            .map(|object| Box::new(Negation { object: object }) as Box<dyn Primitive>)
+            .map(|child| Box::new(Negation { child: child }) as Box<dyn Primitive>)
             .collect();
         Ok(Intersection {
-            object: Union::new_with_smoothness(neg_children, smoothness)?,
+            inner_union: Union::new_with_smoothness(neg_children, smoothness)?,
         })
     }
 }
 
 impl Primitive for Intersection {
     fn static_code(&self) -> HashSet<String> {
-        self.object.static_code()
+        self.inner_union.static_code()
     }
     fn expression(&self, p: &str) -> String {
-        format!("-({})", self.object.expression(p))
+        format!("-({})", self.inner_union.expression(p))
     }
 }
 
@@ -294,8 +294,8 @@ impl Difference {
         }
         let mut new_children = vec![children.swap_remove(0)];
         while !children.is_empty() {
-            let object = children.pop().unwrap();
-            new_children.push(Box::new(Negation { object }));
+            let child = children.pop().unwrap();
+            new_children.push(Box::new(Negation { child }));
         }
         Intersection::new_with_smoothness(new_children, smoothness)
     }

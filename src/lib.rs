@@ -11,7 +11,7 @@ extern crate nalgebra as na;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-mod object;
+mod primitive;
 mod renderer;
 
 #[wasm_bindgen(start)]
@@ -24,15 +24,15 @@ pub fn start() -> Result<(), JsValue> {
 
     let shader_canvas = Rc::new(RefCell::new(ShaderCanvas::new(canvas.clone())?));
 
-    let sphere = Box::new(object::Sphere::new(1.0));
-    let sphere = Box::new(object::Scale::new(sphere, na::Vector3::new(0.5, 0.8, 1.5)));
-    let rbox1 = Box::new(object::ExactBox::new(na::Vector3::new(0.4, 0.6, 1.0)));
-    let rbox1 = Box::new(object::Rotate::from_euler(rbox1, 0.5, 0., 0.));
-    let diff = Box::new(object::Difference::new(vec![rbox1, sphere])?);
-    let rbox2 = Box::new(object::RoundBox::new(na::Vector3::new(1.0, 0.4, 0.6), 0.2));
-    let rbox2 = Box::new(object::Translate::new(rbox2, na::Vector3::new(1., 1., 1.)));
-    let object = object::Union::new_with_smoothness(vec![diff, rbox2], 0.2)?;
-    let shader = renderer::generate_renderer_shader(&object);
+    let sphere = Box::new(primitive::Sphere::new(1.0));
+    let sphere = Box::new(primitive::Scale::new(sphere, na::Vector3::new(0.5, 0.8, 1.5)));
+    let rbox1 = Box::new(primitive::ExactBox::new(na::Vector3::new(0.4, 0.6, 1.0)));
+    let rbox1 = Box::new(primitive::Rotate::from_euler(rbox1, 0.5, 0., 0.));
+    let diff = Box::new(primitive::Difference::new(vec![rbox1, sphere])?);
+    let rbox2 = Box::new(primitive::RoundBox::new(na::Vector3::new(1.0, 0.4, 0.6), 0.2));
+    let rbox2 = Box::new(primitive::Translate::new(rbox2, na::Vector3::new(1., 1., 1.)));
+    let my_object = primitive::Union::new_with_smoothness(vec![diff, rbox2], 0.2)?;
+    let shader = renderer::generate_renderer_shader(&my_object);
     info!("setting shader:\n{}", shader);
     shader_canvas.borrow_mut().set_shader(&shader)?;
 
