@@ -13,12 +13,18 @@ wasm-bindgen = "0.2.83"
 log = "0.4"
 console_log = { version = "0.2", features = ["color"], optional = true }
 nalgebra = "0.31"
+getrandom = { features = [ "js" ] }  # required for rhai
+rhai = { version = "1.11.0", features = ["only_i32", "f32_float", "no_closure", "no_custom_syntax"] }
+parking_lot = { features = ["wasm-bindgen"]}
+
 
 [dependencies.web-sys]
 version = "0.3.4"
 features = [
   'Document',
   'Event',
+  'HtmlButtonElement',
+  'HtmlTextAreaElement',
   'MouseEvent',
   'WheelEvent',
 ]

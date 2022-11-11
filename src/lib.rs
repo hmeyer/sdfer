@@ -5,6 +5,10 @@ use wasm_bindgen::JsCast;
 extern crate log;
 use log::Level;
 
+use rhai::{Engine, EvalAltResult};
+use std::cell::RefCell;
+use std::rc::Rc;
+
 extern crate nalgebra as na;
 
 mod primitive;
@@ -41,6 +45,34 @@ pub fn start() -> Result<(), JsValue> {
     canvas.set_primtive(&my_object)?;
 
     canvas.draw();
+
+    let run_button = document.get_element_by_id("run").unwrap();
+    let run_button: web_sys::HtmlButtonElement =
+        run_button.dyn_into::<web_sys::HtmlButtonElement>()?;
+    let text_program = document.get_element_by_id("program").unwrap();
+    let text_program: web_sys::HtmlTextAreaElement =
+        text_program.dyn_into::<web_sys::HtmlTextAreaElement>()?;
+    let text_output = document.get_element_by_id("output").unwrap();
+    let text_output: web_sys::HtmlTextAreaElement =
+        text_output.dyn_into::<web_sys::HtmlTextAreaElement>()?;
+    let mut engine = Engine::new();
+    engine.on_print(move |s| {
+        let mut output = text_output.value();
+        output.push_str(s);
+        output.push('\n');
+        text_output.set_value(&output);
+    });
+    let engine = Rc::new(RefCell::new(engine));
+
+    {
+        let text_program = text_program.clone();
+        let closure = Closure::<dyn FnMut(_)>::new(move |_event: web_sys::MouseEvent| {
+            let result = engine.borrow().eval::<rhai::Dynamic>(&text_program.value());
+            info!("click: {:?}", result);
+        });
+        run_button.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())?;
+        closure.forget();
+    }
 
     Ok(())
 }

@@ -12,9 +12,9 @@ float map(in vec3 p) {{
 }}",
         obj.expression("p")
     );
-    let static_code = obj
-        .static_code()
-        .iter()
-        .fold(String::new(), |sum, i| sum + i);
+    let static_code = obj.static_code().iter().fold(String::new(), |mut sum, i| {
+        sum.push_str(i);
+        sum
+    });
     format!("{}\n{}\n{}", static_code, map, main_renderer)
 }
