@@ -14,6 +14,8 @@ extern crate nalgebra as na;
 mod primitive;
 mod render_canvas;
 mod renderer;
+mod script_engine;
+mod script_ui;
 
 #[wasm_bindgen(start)]
 pub fn start() -> Result<(), JsValue> {
@@ -49,30 +51,13 @@ pub fn start() -> Result<(), JsValue> {
     let run_button = document.get_element_by_id("run").unwrap();
     let run_button: web_sys::HtmlButtonElement =
         run_button.dyn_into::<web_sys::HtmlButtonElement>()?;
-    let text_program = document.get_element_by_id("program").unwrap();
-    let text_program: web_sys::HtmlTextAreaElement =
-        text_program.dyn_into::<web_sys::HtmlTextAreaElement>()?;
-    let text_output = document.get_element_by_id("output").unwrap();
-    let text_output: web_sys::HtmlTextAreaElement =
-        text_output.dyn_into::<web_sys::HtmlTextAreaElement>()?;
-    let mut engine = Engine::new();
-    engine.on_print(move |s| {
-        let mut output = text_output.value();
-        output.push_str(s);
-        output.push('\n');
-        text_output.set_value(&output);
-    });
-    let engine = Rc::new(RefCell::new(engine));
+    let script = document.get_element_by_id("program").unwrap();
+    let script: web_sys::HtmlTextAreaElement = script.dyn_into::<web_sys::HtmlTextAreaElement>()?;
+    let output = document.get_element_by_id("output").unwrap();
+    let output: web_sys::HtmlTextAreaElement = output.dyn_into::<web_sys::HtmlTextAreaElement>()?;
 
-    {
-        let text_program = text_program.clone();
-        let closure = Closure::<dyn FnMut(_)>::new(move |_event: web_sys::MouseEvent| {
-            let result = engine.borrow().eval::<rhai::Dynamic>(&text_program.value());
-            info!("click: {:?}", result);
-        });
-        run_button.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())?;
-        closure.forget();
-    }
+    let mut engine = script_engine::RhaiScriptEngine::new();
+    let scripter = script_ui::ScriptUI::new(script, output, run_button, engine)?;
 
     Ok(())
 }
