@@ -1,12 +1,10 @@
+use crate::primitive::Primitive;
 use crate::script_engine::ScriptEngine;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{HtmlButtonElement, HtmlTextAreaElement};
 
-pub struct ScriptUI {
-    code_area: HtmlTextAreaElement,
-    output_area: HtmlTextAreaElement,
-}
+pub struct ScriptUI {}
 
 impl ScriptUI {
     pub fn new<E: ScriptEngine + 'static>(
@@ -14,6 +12,7 @@ impl ScriptUI {
         output_area: HtmlTextAreaElement,
         run_button: HtmlButtonElement,
         mut engine: E,
+        on_new_object_callback: impl Fn(&(dyn Primitive)) + 'static,
     ) -> Result<ScriptUI, JsValue> {
         {
             let output_area = output_area.clone();
@@ -27,17 +26,16 @@ impl ScriptUI {
         {
             let code_area = code_area.clone();
             let closure = Closure::<dyn FnMut(_)>::new(move |_event: web_sys::MouseEvent| {
-                let result = engine.eval(&code_area.value());
-                info!("click: {:?}", result.is_ok());
+                match engine.eval(&code_area.value()) {
+                    Ok(primitive) => on_new_object_callback(&*primitive),
+                    Err(e) => info!("was err: {:?}", e),
+                }
             });
             run_button
                 .add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())?;
             closure.forget();
         }
 
-        Ok(ScriptUI {
-            code_area,
-            output_area,
-        })
+        Ok(ScriptUI {})
     }
 }
