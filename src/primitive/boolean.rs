@@ -4,24 +4,37 @@ use std::collections::HashSet;
 #[derive(Clone)]
 enum BooleanKind {
     Default,
-    Polynomial,      // Supports only two primitives.
-    CubicPolynomial, // Supports only two primitives.
-    Root,            // Supports only two primitives.
-    Exponential,     // smoothness = 10
-    Chamfer,
-    Stairs(usize),
+    Polynomial(f32),      // Supports only two primitives.
+    CubicPolynomial(f32), // Supports only two primitives.
+    Root(f32),            // Supports only two primitives.
+    Exponential(f32),     // smoothness = 10
+    Chamfer(f32),
+    Stairs(f32, usize),
 }
 
 impl BooleanKind {
     fn function_name(&self, num_primitives: usize) -> String {
         match self {
             BooleanKind::Default => format!("opMin{}", num_primitives),
-            BooleanKind::Polynomial => format!("opSmoothMinPolynomial{}", num_primitives),
-            BooleanKind::CubicPolynomial => format!("opSmoothMinCubicPolynomial{}", num_primitives),
-            BooleanKind::Root => format!("opSmoothMinRoot{}", num_primitives),
-            BooleanKind::Exponential => format!("opSmoothMinExponential{}", num_primitives),
-            BooleanKind::Chamfer => format!("opChamferMin{}", num_primitives),
-            BooleanKind::Stairs(n) => format!("op{}StairsMin{}", n, num_primitives),
+            BooleanKind::Polynomial(_) => format!("opSmoothMinPolynomial{}", num_primitives),
+            BooleanKind::CubicPolynomial(_) => {
+                format!("opSmoothMinCubicPolynomial{}", num_primitives)
+            }
+            BooleanKind::Root(_) => format!("opSmoothMinRoot{}", num_primitives),
+            BooleanKind::Exponential(_) => format!("opSmoothMinExponential{}", num_primitives),
+            BooleanKind::Chamfer(_) => format!("opChamferMin{}", num_primitives),
+            BooleanKind::Stairs(_, _) => format!("opStairsMin{}", num_primitives),
+        }
+    }
+    fn make_extra_params(&self) -> String {
+        match self {
+            BooleanKind::Default => String::new(),
+            BooleanKind::Polynomial(s) => format!(", {:.8}", s),
+            BooleanKind::CubicPolynomial(s) => format!(", {:.8}", s),
+            BooleanKind::Root(s) => format!(", {:.8}", s),
+            BooleanKind::Exponential(s) => format!(", {:.8}", s),
+            BooleanKind::Chamfer(s) => format!(", {:.8}", s),
+            BooleanKind::Stairs(s, n) => format!(", {:.8}, {:.1}", s, *n as f32),
         }
     }
     fn make_params(num_primitives: usize) -> Vec<String> {
@@ -36,25 +49,25 @@ impl BooleanKind {
                 &self.function_name(num_primitives),
                 &BooleanKind::make_params(num_primitives),
             ),
-            BooleanKind::Polynomial => {
+            BooleanKind::Polynomial(_) => {
                 make_polynomial_min_function(&self.function_name(num_primitives), num_primitives)
             }
-            BooleanKind::CubicPolynomial => make_cubic_polynomial_min_function(
+            BooleanKind::CubicPolynomial(_) => make_cubic_polynomial_min_function(
                 &self.function_name(num_primitives),
                 num_primitives,
             ),
-            BooleanKind::Root => {
+            BooleanKind::Root(_) => {
                 make_root_min_function(&self.function_name(num_primitives), num_primitives)
             }
-            BooleanKind::Exponential => make_exponential_min_function(
+            BooleanKind::Exponential(_) => make_exponential_min_function(
                 &self.function_name(num_primitives),
                 &BooleanKind::make_params(num_primitives),
             ),
-            BooleanKind::Chamfer => {
+            BooleanKind::Chamfer(_) => {
                 make_chamfer_min_function(&self.function_name(num_primitives), num_primitives)
             }
-            BooleanKind::Stairs(n) => {
-                make_stairs_min_function(&self.function_name(num_primitives), num_primitives, *n)
+            BooleanKind::Stairs(_, _) => {
+                make_stairs_min_function(&self.function_name(num_primitives), num_primitives)
             }
         }
     }
@@ -140,21 +153,19 @@ float {name}(float d0, float d1, float k) {{
     )
 }
 
-fn make_stairs_min_function(function_name: &str, num_primitives: usize, n: usize) -> String {
+fn make_stairs_min_function(function_name: &str, num_primitives: usize) -> String {
     if num_primitives != 2 {
         panic!("Round min requires exactly two arguments.");
     }
     format!(
         "
-float {name}(float d0, float d1, float k) {{
-    float n = {n}.;
+float {name}(float d0, float d1, float k, float n) {{
     float s = k / n;
     float u = d1 - k;
     return min(min(d0, d1), 0.5 * (u + d0 + abs((mod(u - d0 + s, 2. * s)) - s)));
 }}
 ",
         name = function_name,
-        n = n,
     )
 }
 
@@ -208,7 +219,7 @@ impl Boolean {
         let kind = if smoothness == 0.0 {
             BooleanKind::Default
         } else {
-            BooleanKind::Stairs(4)
+            BooleanKind::Stairs(smoothness, 4)
         };
         Ok(Box::new(Boolean {
             children,
@@ -269,11 +280,11 @@ impl Primitive for Boolean {
             String::new()
         };
         return format!(
-            "{}{}({}{})",
-            if self.negate { "-" } else { "" },
-            self.kind.function_name(self.children.len()),
-            child_exps,
-            smoothness_exp
+            "{negate}{fn_name}({child_exps}{extra})",
+            negate = if self.negate { "-" } else { "" },
+            fn_name = self.kind.function_name(self.children.len()),
+            child_exps = child_exps,
+            extra = self.kind.make_extra_params()
         );
     }
 }
