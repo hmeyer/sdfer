@@ -1,5 +1,5 @@
 use crate::primitive::*;
-use rhai;
+use rhai::{Array, Dynamic, Engine, EvalAltResult};
 use wasm_bindgen::prelude::JsValue;
 use wasm_bindgen::JsCast;
 
@@ -9,12 +9,12 @@ pub trait ScriptEngine {
 }
 
 pub struct RhaiScriptEngine {
-    engine: rhai::Engine,
+    engine: Engine,
 }
 
 impl RhaiScriptEngine {
     pub fn new() -> RhaiScriptEngine {
-        let mut engine = rhai::Engine::new();
+        let mut engine = Engine::new();
         engine
             .register_type_with_name::<na::Vector3<f32>>("Vector")
             .register_fn("Vector", |x: f32, y: f32, z: f32| {
@@ -56,7 +56,8 @@ impl RhaiScriptEngine {
             });
         engine
             .register_type_with_name::<Box<Sphere>>("Sphere")
-            .register_fn("Sphere", Sphere::new);
+            .register_fn("Sphere", Sphere::new)
+            .register_fn("Sphere", |r: i32| Sphere::new(r as f32));
         engine
             .register_type_with_name::<Box<ExactBox>>("Box")
             .register_fn("Box", ExactBox::new);
@@ -66,21 +67,44 @@ impl RhaiScriptEngine {
             .register_fn("RoundBox", |extend: na::Vector3<f32>, radius: i32| {
                 RoundBox::new(extend, radius as f32)
             });
+        engine
+            .register_type_with_name::<Box<Union>>("Union")
+            .register_fn(
+                "Union",
+                |children: rhai::Array| -> Result<Box<Union>, Box<EvalAltResult>> {
+                    let children = to_primitive_vec(children)?;
+                    Union::new(children).map_err(|e| e.into())
+                },
+            );
         let engine = engine;
         RhaiScriptEngine { engine }
     }
 }
 
+fn to_primitive_vec(children: Array) -> Result<Vec<Box<Primitive>>, Box<EvalAltResult>> {
+    children
+        .into_iter()
+        .map(|c| to_primitive(c).map_err(|e| e.into()))
+        .collect()
+}
+
+fn to_primitive(p: Dynamic) -> Result<Box<Primitive>, String> {
+    if p.type_id() == rhai::plugin::TypeId::of::<Box<Primitive>>() {
+        return Ok(p.cast::<Box<Primitive>>());
+    }
+    if p.type_id() == rhai::plugin::TypeId::of::<Box<Union>>() {
+        return Ok(p.cast::<Box<Union>>());
+    }
+    return Err(format!("Not a primitive: {}", p));
+}
+
 impl ScriptEngine for RhaiScriptEngine {
-    fn eval(&self, script: &str) -> Result<Box<dyn Primitive>, JsValue> {
+    fn eval(&self, script: &str) -> Result<Box<Primitive>, JsValue> {
         let result = self
             .engine
-            .eval::<rhai::Dynamic>(script)
+            .eval::<Dynamic>(script)
             .map_err(|e| format!("{:?}", e))?;
-        if result.type_id() == rhai::plugin::TypeId::of::<Box<Primitive>>() {
-            return Ok(result.cast::<Box<Primitive>>());
-        }
-        return Err(format!("Not a primitive: {}", result).into());
+        to_primitive(result).map_err(|e| e.into())
     }
     fn on_print(&mut self, callback: impl Fn(&str) + 'static) {
         self.engine.on_print(callback);
