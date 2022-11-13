@@ -23,6 +23,7 @@ impl ScriptUI {
                 output_area.set_value(&output);
             });
         }
+        let engine = engine;
         {
             let code_area = code_area.clone();
             let closure = Closure::<dyn FnMut(_)>::new(move |_event: web_sys::MouseEvent| {
