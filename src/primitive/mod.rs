@@ -56,7 +56,7 @@ mod boxes;
 pub use boxes::{ExactBox, RoundBox};
 
 mod boolean;
-pub use boolean::{Difference, Intersection, Union};
+pub use boolean::Boolean;
 
 mod transformations;
 pub use transformations::{Rotate, Scale, Translate};

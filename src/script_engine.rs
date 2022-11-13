@@ -68,12 +68,12 @@ impl RhaiScriptEngine {
                 RoundBox::new(extend, radius as f32)
             });
         engine
-            .register_type_with_name::<Box<Union>>("Union")
+            .register_type_with_name::<Box<Boolean>>("Boolean")
             .register_fn(
-                "Union",
-                |children: rhai::Array| -> Result<Box<Union>, Box<EvalAltResult>> {
+                "Boolean",
+                |children: rhai::Array| -> Result<Box<Boolean>, Box<EvalAltResult>> {
                     let children = to_primitive_vec(children)?;
-                    Union::new(children).map_err(|e| e.into())
+                    Boolean::new_union(children).map_err(|e| e.into())
                 },
             );
         let engine = engine;
@@ -92,8 +92,8 @@ fn to_primitive(p: Dynamic) -> Result<Box<Primitive>, String> {
     if p.type_id() == rhai::plugin::TypeId::of::<Box<Primitive>>() {
         return Ok(p.cast::<Box<Primitive>>());
     }
-    if p.type_id() == rhai::plugin::TypeId::of::<Box<Union>>() {
-        return Ok(p.cast::<Box<Union>>());
+    if p.type_id() == rhai::plugin::TypeId::of::<Box<Boolean>>() {
+        return Ok(p.cast::<Box<Boolean>>());
     }
     return Err(format!("Not a primitive: {}", p));
 }

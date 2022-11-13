@@ -2,7 +2,7 @@ use crate::primitive::Primitive;
 use std::collections::HashSet;
 
 #[derive(Clone)]
-enum UnionKind {
+enum BooleanKind {
     Default,
     Polynomial,      // Supports only two primitives.
     CubicPolynomial, // Supports only two primitives.
@@ -12,16 +12,16 @@ enum UnionKind {
     Stairs(usize),
 }
 
-impl UnionKind {
+impl BooleanKind {
     fn function_name(&self, num_primitives: usize) -> String {
         match self {
-            UnionKind::Default => format!("opMin{}", num_primitives),
-            UnionKind::Polynomial => format!("opSmoothMinPolynomial{}", num_primitives),
-            UnionKind::CubicPolynomial => format!("opSmoothMinCubicPolynomial{}", num_primitives),
-            UnionKind::Root => format!("opSmoothMinRoot{}", num_primitives),
-            UnionKind::Exponential => format!("opSmoothMinExponential{}", num_primitives),
-            UnionKind::Chamfer => format!("opChamferMin{}", num_primitives),
-            UnionKind::Stairs(n) => format!("op{}StairsMin{}", n, num_primitives),
+            BooleanKind::Default => format!("opMin{}", num_primitives),
+            BooleanKind::Polynomial => format!("opSmoothMinPolynomial{}", num_primitives),
+            BooleanKind::CubicPolynomial => format!("opSmoothMinCubicPolynomial{}", num_primitives),
+            BooleanKind::Root => format!("opSmoothMinRoot{}", num_primitives),
+            BooleanKind::Exponential => format!("opSmoothMinExponential{}", num_primitives),
+            BooleanKind::Chamfer => format!("opChamferMin{}", num_primitives),
+            BooleanKind::Stairs(n) => format!("op{}StairsMin{}", n, num_primitives),
         }
     }
     fn make_params(num_primitives: usize) -> Vec<String> {
@@ -29,31 +29,31 @@ impl UnionKind {
     }
     fn make_function(&self, num_primitives: usize) -> String {
         if num_primitives < 2 {
-            panic!("Union function needs at least to primitives.")
+            panic!("Boolean function needs at least to primitives.")
         }
         match self {
-            UnionKind::Default => make_default_min_function(
+            BooleanKind::Default => make_default_min_function(
                 &self.function_name(num_primitives),
-                &UnionKind::make_params(num_primitives),
+                &BooleanKind::make_params(num_primitives),
             ),
-            UnionKind::Polynomial => {
+            BooleanKind::Polynomial => {
                 make_polynomial_min_function(&self.function_name(num_primitives), num_primitives)
             }
-            UnionKind::CubicPolynomial => make_cubic_polynomial_min_function(
+            BooleanKind::CubicPolynomial => make_cubic_polynomial_min_function(
                 &self.function_name(num_primitives),
                 num_primitives,
             ),
-            UnionKind::Root => {
+            BooleanKind::Root => {
                 make_root_min_function(&self.function_name(num_primitives), num_primitives)
             }
-            UnionKind::Exponential => make_exponential_min_function(
+            BooleanKind::Exponential => make_exponential_min_function(
                 &self.function_name(num_primitives),
-                &UnionKind::make_params(num_primitives),
+                &BooleanKind::make_params(num_primitives),
             ),
-            UnionKind::Chamfer => {
+            BooleanKind::Chamfer => {
                 make_chamfer_min_function(&self.function_name(num_primitives), num_primitives)
             }
-            UnionKind::Stairs(n) => {
+            BooleanKind::Stairs(n) => {
                 make_stairs_min_function(&self.function_name(num_primitives), num_primitives, *n)
             }
         }
@@ -180,37 +180,76 @@ float {name}(float {params}, float k) {{
 }
 
 #[derive(Clone)]
-pub struct Union {
+pub struct Boolean {
     children: Vec<Box<dyn Primitive>>,
     smoothness: f32,
-    kind: UnionKind,
+    kind: BooleanKind,
+    negate: bool,
 }
 
-impl Union {
-    pub fn new(children: Vec<Box<dyn Primitive>>) -> Result<Box<Union>, String> {
-        Union::new_with_smoothness(children, 0.)
+impl Boolean {
+    pub fn new_union(children: Vec<Box<dyn Primitive>>) -> Result<Box<Boolean>, String> {
+        Boolean::new_with_smoothness_and_negate(children, 0., false)
     }
-    pub fn new_with_smoothness(
+    pub fn new_union_with_smoothness(
         children: Vec<Box<dyn Primitive>>,
         smoothness: f32,
-    ) -> Result<Box<Union>, String> {
+    ) -> Result<Box<Boolean>, String> {
+        Boolean::new_with_smoothness_and_negate(children, smoothness, false)
+    }
+    fn new_with_smoothness_and_negate(
+        children: Vec<Box<dyn Primitive>>,
+        smoothness: f32,
+        negate: bool,
+    ) -> Result<Box<Boolean>, String> {
         if children.len() < 2 {
-            return Err("Union requires at least 2 children.".to_string());
+            return Err("Boolean requires at least 2 children.".to_string());
         }
         let kind = if smoothness == 0.0 {
-            UnionKind::Default
+            BooleanKind::Default
         } else {
-            UnionKind::Stairs(4)
+            BooleanKind::Stairs(4)
         };
-        Ok(Box::new(Union {
+        Ok(Box::new(Boolean {
             children,
             smoothness,
             kind,
+            negate,
         }))
+    }
+    pub fn new_intersection(children: Vec<Box<dyn Primitive>>) -> Result<Box<Boolean>, String> {
+        Boolean::new_intersection_with_smoothness(children, 0.)
+    }
+    pub fn new_intersection_with_smoothness(
+        children: Vec<Box<dyn Primitive>>,
+        smoothness: f32,
+    ) -> Result<Box<Boolean>, String> {
+        let neg_children = children
+            .into_iter()
+            .map(|child| Box::new(Negation { child: child }) as Box<dyn Primitive>)
+            .collect();
+        Boolean::new_with_smoothness_and_negate(neg_children, smoothness, true)
+    }
+    pub fn new_difference(children: Vec<Box<dyn Primitive>>) -> Result<Box<Boolean>, String> {
+        Boolean::new_difference_with_smoothness(children, 0.)
+    }
+    pub fn new_difference_with_smoothness(
+        mut children: Vec<Box<dyn Primitive>>,
+        smoothness: f32,
+    ) -> Result<Box<Boolean>, String> {
+        if children.len() == 0 {
+            return Err("Difference requires at least one child.".to_string());
+        }
+        let mut new_children = vec![children.swap_remove(0)];
+        while !children.is_empty() {
+            let child = children.pop().unwrap();
+            new_children.push(Box::new(Negation { child }));
+        }
+        Boolean::new_intersection_with_smoothness(new_children, smoothness)
     }
 }
 
-impl Primitive for Union {
+impl Primitive for Boolean {
     fn static_code(&self) -> HashSet<String> {
         let mut code_set = HashSet::new();
         for child in &self.children {
@@ -230,7 +269,8 @@ impl Primitive for Union {
             String::new()
         };
         return format!(
-            "{}({}{})",
+            "{}{}({}{})",
+            if self.negate { "-" } else { "" },
             self.kind.function_name(self.children.len()),
             child_exps,
             smoothness_exp
@@ -249,60 +289,5 @@ impl Primitive for Negation {
     }
     fn expression(&self, p: &str) -> String {
         format!("-({})", self.child.expression(p))
-    }
-}
-
-#[derive(Clone)]
-pub struct Intersection {
-    inner_union: Box<Union>,
-}
-
-impl Intersection {
-    pub fn new(children: Vec<Box<dyn Primitive>>) -> Result<Box<Intersection>, String> {
-        Intersection::new_with_smoothness(children, 0.)
-    }
-    pub fn new_with_smoothness(
-        children: Vec<Box<dyn Primitive>>,
-        smoothness: f32,
-    ) -> Result<Box<Intersection>, String> {
-        let neg_children = children
-            .into_iter()
-            .map(|child| Box::new(Negation { child: child }) as Box<dyn Primitive>)
-            .collect();
-        Ok(Box::new(Intersection {
-            inner_union: Union::new_with_smoothness(neg_children, smoothness)?,
-        }))
-    }
-}
-
-impl Primitive for Intersection {
-    fn static_code(&self) -> HashSet<String> {
-        self.inner_union.static_code()
-    }
-    fn expression(&self, p: &str) -> String {
-        format!("-({})", self.inner_union.expression(p))
-    }
-}
-
-#[derive(Clone)]
-pub struct Difference {}
-
-impl Difference {
-    pub fn new(children: Vec<Box<dyn Primitive>>) -> Result<Box<Intersection>, String> {
-        Difference::new_with_smoothness(children, 0.)
-    }
-    pub fn new_with_smoothness(
-        mut children: Vec<Box<dyn Primitive>>,
-        smoothness: f32,
-    ) -> Result<Box<Intersection>, String> {
-        if children.len() == 0 {
-            return Err("Difference requires at least one child.".to_string());
-        }
-        let mut new_children = vec![children.swap_remove(0)];
-        while !children.is_empty() {
-            let child = children.pop().unwrap();
-            new_children.push(Box::new(Negation { child }));
-        }
-        Intersection::new_with_smoothness(new_children, smoothness)
     }
 }

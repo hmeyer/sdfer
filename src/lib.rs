@@ -32,10 +32,10 @@ pub fn start() -> Result<(), JsValue> {
     let sphere = primitive::Scale::new(sphere, na::Vector3::new(0.5, 0.8, 1.5));
     let rbox1 = primitive::ExactBox::new(na::Vector3::new(0.4, 0.6, 1.0));
     let rbox1 = primitive::Rotate::from_euler(rbox1, 0.5, 0., 0.);
-    let diff = primitive::Difference::new(vec![rbox1, sphere])?;
+    let diff = primitive::Boolean::new_difference(vec![rbox1, sphere])?;
     let rbox2 = primitive::RoundBox::new(na::Vector3::new(1.0, 0.4, 0.6), 0.2);
     let rbox2 = primitive::Translate::new(rbox2, na::Vector3::new(1., 1., 1.));
-    let my_object = primitive::Union::new_with_smoothness(vec![diff, rbox2], 0.2)?;
+    let my_object = primitive::Boolean::new_union_with_smoothness(vec![diff, rbox2], 0.2)?;
     let new_object_callback = move |new_object: &dyn Primitive| {
         if let Err(err) = canvas.set_primtive(new_object) {
             error!("{:?}", err);
