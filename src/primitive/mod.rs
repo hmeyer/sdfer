@@ -3,13 +3,13 @@ use std::collections::HashSet;
 pub trait Primitive: PrimitiveClone {
     fn expression(&self, p: &str) -> String;
     fn static_code(&self) -> HashSet<String>;
-    fn translate(&self, vector: na::Vector3<f32>) -> Box<Translate> {
+    fn translate(&self, vector: na::Vector3<f32>) -> Box<Primitive> {
         Translate::new(self.clone_box(), vector)
     }
-    fn rotate_euler(&self, r: f32, p: f32, y: f32) -> Box<Rotate> {
+    fn rotate_euler(&self, r: f32, p: f32, y: f32) -> Box<Primitive> {
         Rotate::from_euler(self.clone_box(), r, p, y)
     }
-    fn scale(&self, scale: na::Vector3<f32>) -> Box<Scale> {
+    fn scale(&self, scale: na::Vector3<f32>) -> Box<Primitive> {
         Scale::new(self.clone_box(), scale)
     }
 }
