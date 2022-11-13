@@ -8,8 +8,8 @@ pub struct ExactBox {
 }
 
 impl ExactBox {
-    pub fn new(size: na::Vector3<f32>) -> ExactBox {
-        ExactBox { size }
+    pub fn new(size: na::Vector3<f32>) -> Box<ExactBox> {
+        Box::new(ExactBox { size })
     }
 }
 
@@ -35,8 +35,8 @@ pub struct RoundBox {
 }
 
 impl RoundBox {
-    pub fn new(size: na::Vector3<f32>, radius: f32) -> RoundBox {
-        RoundBox { size, radius }
+    pub fn new(size: na::Vector3<f32>, radius: f32) -> Box<RoundBox> {
+        Box::new(RoundBox { size, radius })
     }
 }
 

@@ -9,8 +9,8 @@ pub struct Translate {
 }
 
 impl Translate {
-    pub fn new(primitive: Box<dyn Primitive>, vector: na::Vector3<f32>) -> Translate {
-        Translate { primitive, vector }
+    pub fn new(primitive: Box<dyn Primitive>, vector: na::Vector3<f32>) -> Box<Translate> {
+        Box::new(Translate { primitive, vector })
     }
 }
 
@@ -31,13 +31,13 @@ pub struct Rotate {
 }
 
 impl Rotate {
-    pub fn from_euler(primitive: Box<dyn Primitive>, r: f32, p: f32, y: f32) -> Rotate {
-        Rotate {
+    pub fn from_euler(primitive: Box<dyn Primitive>, r: f32, p: f32, y: f32) -> Box<Rotate> {
+        Box::new(Rotate {
             primitive,
             matrix: na::Matrix4::from_euler_angles(r, p, y)
                 .fixed_slice::<3, 3>(0, 0)
                 .into(),
-        }
+        })
     }
 }
 
@@ -58,8 +58,8 @@ pub struct Scale {
 }
 
 impl Scale {
-    pub fn new(primitive: Box<dyn Primitive>, scale: na::Vector3<f32>) -> Scale {
-        Scale { primitive, scale }
+    pub fn new(primitive: Box<dyn Primitive>, scale: na::Vector3<f32>) -> Box<Scale> {
+        Box::new(Scale { primitive, scale })
     }
 }
 

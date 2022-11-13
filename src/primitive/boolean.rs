@@ -187,13 +187,13 @@ pub struct Union {
 }
 
 impl Union {
-    pub fn new(children: Vec<Box<dyn Primitive>>) -> Result<Union, String> {
+    pub fn new(children: Vec<Box<dyn Primitive>>) -> Result<Box<Union>, String> {
         Union::new_with_smoothness(children, 0.)
     }
     pub fn new_with_smoothness(
         children: Vec<Box<dyn Primitive>>,
         smoothness: f32,
-    ) -> Result<Union, String> {
+    ) -> Result<Box<Union>, String> {
         if children.len() < 2 {
             return Err("Union requires at least 2 children.".to_string());
         }
@@ -202,11 +202,11 @@ impl Union {
         } else {
             UnionKind::Stairs(4)
         };
-        Ok(Union {
+        Ok(Box::new(Union {
             children,
             smoothness,
             kind,
-        })
+        }))
     }
 }
 
@@ -254,24 +254,24 @@ impl Primitive for Negation {
 
 #[derive(Clone)]
 pub struct Intersection {
-    inner_union: Union,
+    inner_union: Box<Union>,
 }
 
 impl Intersection {
-    pub fn new(children: Vec<Box<dyn Primitive>>) -> Result<Intersection, String> {
+    pub fn new(children: Vec<Box<dyn Primitive>>) -> Result<Box<Intersection>, String> {
         Intersection::new_with_smoothness(children, 0.)
     }
     pub fn new_with_smoothness(
         children: Vec<Box<dyn Primitive>>,
         smoothness: f32,
-    ) -> Result<Intersection, String> {
+    ) -> Result<Box<Intersection>, String> {
         let neg_children = children
             .into_iter()
             .map(|child| Box::new(Negation { child: child }) as Box<dyn Primitive>)
             .collect();
-        Ok(Intersection {
+        Ok(Box::new(Intersection {
             inner_union: Union::new_with_smoothness(neg_children, smoothness)?,
-        })
+        }))
     }
 }
 
@@ -288,13 +288,13 @@ impl Primitive for Intersection {
 pub struct Difference {}
 
 impl Difference {
-    pub fn new(children: Vec<Box<dyn Primitive>>) -> Result<Intersection, String> {
+    pub fn new(children: Vec<Box<dyn Primitive>>) -> Result<Box<Intersection>, String> {
         Difference::new_with_smoothness(children, 0.)
     }
     pub fn new_with_smoothness(
         mut children: Vec<Box<dyn Primitive>>,
         smoothness: f32,
-    ) -> Result<Intersection, String> {
+    ) -> Result<Box<Intersection>, String> {
         if children.len() == 0 {
             return Err("Difference requires at least one child.".to_string());
         }

@@ -7,8 +7,8 @@ pub struct Sphere {
 }
 
 impl Sphere {
-    pub fn new(radius: f32) -> Sphere {
-        Sphere { radius }
+    pub fn new(radius: f32) -> Box<Sphere> {
+        Box::new(Sphere { radius })
     }
 }
 
