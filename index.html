@@ -5,11 +5,19 @@
   <body>
     <canvas id="canvas" height="480" width="640"></canvas>
     <textarea id="program" rows="20" cols="33">
-fn run(a) {
-  let b = a + 1;
-  print("Hello world! a = " + a);
-}
-run(10);
+let sphere = Sphere(1);
+sphere = sphere.scale(Vector(0.5, 0.8, 1.5));
+
+let box1 = Box(Vector(0.4, 0.6, 1));
+box1 = box1.rotate_euler(0.5, 0., 0.);
+
+let diff = Difference([box1, sphere]);
+
+let box2 = RoundBox(Vector(1, 0.5, 0.6), 0.2);
+box2 = box2.translate(Vector(1,1,1));
+
+let u = Union([diff, box2]);
+u.stairs(0.2, 4)    
     </textarea>
     <button id="run" type="button">Run</button>    
     <textarea id="output" rows="20" cols="33" readonly="true"></textarea>    

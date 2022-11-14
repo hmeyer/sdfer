@@ -21,26 +21,14 @@ pub fn start() -> Result<(), JsValue> {
     let document = window.document().unwrap();
     let canvas = document.get_element_by_id("canvas").unwrap();
     let canvas: web_sys::HtmlCanvasElement = canvas.dyn_into::<web_sys::HtmlCanvasElement>()?;
-
     let canvas = render_canvas::RenderCanvas::new(canvas)?;
 
-    let sphere = primitive::Sphere::new(1.0);
-    let sphere = primitive::Scale::new(sphere, na::Vector3::new(0.5, 0.8, 1.5));
-    let rbox1 = primitive::ExactBox::new(na::Vector3::new(0.4, 0.6, 1.0));
-    let rbox1 = primitive::Rotate::from_euler(rbox1, 0.5, 0., 0.);
-    let diff = primitive::Boolean::new_difference(vec![rbox1, sphere])?;
-    let rbox2 = primitive::RoundBox::new(na::Vector3::new(1.0, 0.4, 0.6), 0.2);
-    let rbox2 = primitive::Translate::new(rbox2, na::Vector3::new(1., 1., 1.));
-    let mut my_object = primitive::Boolean::new_union(vec![diff, rbox2])?;
-    my_object.set_kind(primitive::BooleanKind::Stairs(0.2, 3))?;
     let new_object_callback = move |new_object: &dyn Primitive| {
         if let Err(err) = canvas.set_primtive(new_object) {
             error!("{:?}", err);
         };
         canvas.draw();
     };
-    new_object_callback(&*my_object);
-
     let run_button = document.get_element_by_id("run").unwrap();
     let run_button: web_sys::HtmlButtonElement =
         run_button.dyn_into::<web_sys::HtmlButtonElement>()?;
@@ -48,7 +36,6 @@ pub fn start() -> Result<(), JsValue> {
     let script: web_sys::HtmlTextAreaElement = script.dyn_into::<web_sys::HtmlTextAreaElement>()?;
     let output = document.get_element_by_id("output").unwrap();
     let output: web_sys::HtmlTextAreaElement = output.dyn_into::<web_sys::HtmlTextAreaElement>()?;
-
     let engine = script_engine::RhaiScriptEngine::new();
     _ = script_ui::ScriptUI::new(script, output, run_button, engine, new_object_callback)?;
 

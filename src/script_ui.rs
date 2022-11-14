@@ -26,12 +26,13 @@ impl ScriptUI {
         let engine = engine;
         {
             let code_area = code_area.clone();
-            let closure = Closure::<dyn FnMut(_)>::new(move |_event: web_sys::MouseEvent| {
-                match engine.eval(&code_area.value()) {
-                    Ok(primitive) => on_new_object_callback(&*primitive),
-                    Err(e) => info!("was err: {:?}", e),
-                }
-            });
+            let closure = move |_event: web_sys::MouseEvent| match engine.eval(&code_area.value()) {
+                Ok(primitive) => on_new_object_callback(&*primitive),
+                Err(e) => info!("was err: {:?}", e),
+            };
+            // Run closure once to create first object.
+            closure(web_sys::MouseEvent::new("mock")?);
+            let closure = Closure::<dyn FnMut(_)>::new(closure);
             run_button
                 .add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())?;
             closure.forget();
