@@ -3,13 +3,13 @@ use std::collections::HashSet;
 pub trait Primitive: PrimitiveClone {
     fn expression(&self, p: &str) -> String;
     fn static_code(&self) -> HashSet<String>;
-    fn translate(&self, vector: na::Vector3<f32>) -> Box<Primitive> {
+    fn translate(&self, vector: na::Vector3<f32>) -> Box<dyn Primitive> {
         Translate::new(self.clone_box(), vector)
     }
-    fn rotate_euler(&self, r: f32, p: f32, y: f32) -> Box<Primitive> {
+    fn rotate_euler(&self, r: f32, p: f32, y: f32) -> Box<dyn Primitive> {
         Rotate::from_euler(self.clone_box(), r, p, y)
     }
-    fn scale(&self, scale: na::Vector3<f32>) -> Box<Primitive> {
+    fn scale(&self, scale: na::Vector3<f32>) -> Box<dyn Primitive> {
         Scale::new(self.clone_box(), scale)
     }
 }
@@ -56,7 +56,7 @@ mod boxes;
 pub use boxes::{ExactBox, RoundBox};
 
 mod boolean;
-pub use boolean::Boolean;
+pub use boolean::{Boolean, BooleanKind};
 
 mod transformations;
 pub use transformations::{Rotate, Scale, Translate};

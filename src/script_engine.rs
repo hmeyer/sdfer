@@ -1,7 +1,6 @@
 use crate::primitive::*;
 use rhai::{Array, Dynamic, Engine, EvalAltResult};
 use wasm_bindgen::prelude::JsValue;
-use wasm_bindgen::JsCast;
 
 pub trait ScriptEngine {
     fn eval(&self, script: &str) -> Result<Box<dyn Primitive>, JsValue>;
@@ -67,13 +66,85 @@ impl RhaiScriptEngine {
             .register_fn("RoundBox", |extend: na::Vector3<f32>, radius: i32| {
                 RoundBox::new(extend, radius as f32)
             });
+
         engine
             .register_type_with_name::<Box<Boolean>>("Boolean")
             .register_fn(
-                "Boolean",
+                "Union",
                 |children: rhai::Array| -> Result<Box<Boolean>, Box<EvalAltResult>> {
                     let children = to_primitive_vec(children)?;
                     Boolean::new_union(children).map_err(|e| e.into())
+                },
+            )
+            .register_fn(
+                "Intersection",
+                |children: rhai::Array| -> Result<Box<Boolean>, Box<EvalAltResult>> {
+                    let children = to_primitive_vec(children)?;
+                    Boolean::new_intersection(children).map_err(|e| e.into())
+                },
+            )
+            .register_fn(
+                "Difference",
+                |children: rhai::Array| -> Result<Box<Boolean>, Box<EvalAltResult>> {
+                    let children = to_primitive_vec(children)?;
+                    Boolean::new_difference(children).map_err(|e| e.into())
+                },
+            )
+            .register_fn(
+                "smooth",
+                |b: &mut Box<Boolean>, k: f32| -> Result<Box<Boolean>, Box<EvalAltResult>> {
+                    let mut b = b.clone();
+                    b.set_kind(BooleanKind::Polynomial(k))
+                        .map_err(|e: String| Box::<EvalAltResult>::from(e))?;
+                    Ok(b)
+                },
+            )
+            .register_fn(
+                "smooth_cubic",
+                |b: &mut Box<Boolean>, k: f32| -> Result<Box<Boolean>, Box<EvalAltResult>> {
+                    let mut b = b.clone();
+                    b.set_kind(BooleanKind::CubicPolynomial(k))
+                        .map_err(|e: String| Box::<EvalAltResult>::from(e))?;
+                    Ok(b)
+                },
+            )
+            .register_fn(
+                "smooth_root",
+                |b: &mut Box<Boolean>, k: f32| -> Result<Box<Boolean>, Box<EvalAltResult>> {
+                    let mut b = b.clone();
+                    b.set_kind(BooleanKind::Root(k))
+                        .map_err(|e: String| Box::<EvalAltResult>::from(e))?;
+                    Ok(b)
+                },
+            )
+            .register_fn(
+                "smooth_exponential",
+                |b: &mut Box<Boolean>, k: f32| -> Result<Box<Boolean>, Box<EvalAltResult>> {
+                    let mut b = b.clone();
+                    b.set_kind(BooleanKind::Exponential(k))
+                        .map_err(|e: String| Box::<EvalAltResult>::from(e))?;
+                    Ok(b)
+                },
+            )
+            .register_fn(
+                "chamfer",
+                |b: &mut Box<Boolean>, k: f32| -> Result<Box<Boolean>, Box<EvalAltResult>> {
+                    let mut b = b.clone();
+                    b.set_kind(BooleanKind::Chamfer(k))
+                        .map_err(|e: String| Box::<EvalAltResult>::from(e))?;
+                    Ok(b)
+                },
+            )
+            .register_fn(
+                "stairs",
+                |b: &mut Box<Boolean>,
+                 k: f32,
+                 n: i32|
+                 -> Result<Box<Boolean>, Box<EvalAltResult>> {
+                    let mut b = b.clone();
+                    b.set_kind(BooleanKind::Stairs(k, n as usize))
+                        .map_err(|e: String| Box::<EvalAltResult>::from(e))?;
+                    Ok(b)
                 },
             );
         let engine = engine;
@@ -81,16 +152,16 @@ impl RhaiScriptEngine {
     }
 }
 
-fn to_primitive_vec(children: Array) -> Result<Vec<Box<Primitive>>, Box<EvalAltResult>> {
+fn to_primitive_vec(children: Array) -> Result<Vec<Box<dyn Primitive>>, Box<EvalAltResult>> {
     children
         .into_iter()
         .map(|c| to_primitive(c).map_err(|e| e.into()))
         .collect()
 }
 
-fn to_primitive(p: Dynamic) -> Result<Box<Primitive>, String> {
-    if p.type_id() == rhai::plugin::TypeId::of::<Box<Primitive>>() {
-        return Ok(p.cast::<Box<Primitive>>());
+fn to_primitive(p: Dynamic) -> Result<Box<dyn Primitive>, String> {
+    if p.type_id() == rhai::plugin::TypeId::of::<Box<dyn Primitive>>() {
+        return Ok(p.cast::<Box<dyn Primitive>>());
     }
     if p.type_id() == rhai::plugin::TypeId::of::<Box<Boolean>>() {
         return Ok(p.cast::<Box<Boolean>>());
@@ -99,7 +170,7 @@ fn to_primitive(p: Dynamic) -> Result<Box<Primitive>, String> {
 }
 
 impl ScriptEngine for RhaiScriptEngine {
-    fn eval(&self, script: &str) -> Result<Box<Primitive>, JsValue> {
+    fn eval(&self, script: &str) -> Result<Box<dyn Primitive>, JsValue> {
         let result = self
             .engine
             .eval::<Dynamic>(script)

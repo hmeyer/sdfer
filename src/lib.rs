@@ -6,10 +6,6 @@ use wasm_bindgen::JsCast;
 extern crate log;
 use log::Level;
 
-use rhai::{Engine, EvalAltResult};
-use std::cell::RefCell;
-use std::rc::Rc;
-
 extern crate nalgebra as na;
 
 mod primitive;
@@ -35,7 +31,8 @@ pub fn start() -> Result<(), JsValue> {
     let diff = primitive::Boolean::new_difference(vec![rbox1, sphere])?;
     let rbox2 = primitive::RoundBox::new(na::Vector3::new(1.0, 0.4, 0.6), 0.2);
     let rbox2 = primitive::Translate::new(rbox2, na::Vector3::new(1., 1., 1.));
-    let my_object = primitive::Boolean::new_union_with_smoothness(vec![diff, rbox2], 0.2)?;
+    let mut my_object = primitive::Boolean::new_union(vec![diff, rbox2])?;
+    my_object.set_kind(primitive::BooleanKind::Stairs(0.2, 3))?;
     let new_object_callback = move |new_object: &dyn Primitive| {
         if let Err(err) = canvas.set_primtive(new_object) {
             error!("{:?}", err);
@@ -52,9 +49,8 @@ pub fn start() -> Result<(), JsValue> {
     let output = document.get_element_by_id("output").unwrap();
     let output: web_sys::HtmlTextAreaElement = output.dyn_into::<web_sys::HtmlTextAreaElement>()?;
 
-    let mut engine = script_engine::RhaiScriptEngine::new();
-    let scripter =
-        script_ui::ScriptUI::new(script, output, run_button, engine, new_object_callback)?;
+    let engine = script_engine::RhaiScriptEngine::new();
+    _ = script_ui::ScriptUI::new(script, output, run_button, engine, new_object_callback)?;
 
     Ok(())
 }

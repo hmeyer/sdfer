@@ -8,7 +8,7 @@ pub struct ExactBox {
 }
 
 impl ExactBox {
-    pub fn new(size: na::Vector3<f32>) -> Box<Primitive> {
+    pub fn new(size: na::Vector3<f32>) -> Box<dyn Primitive> {
         Box::new(ExactBox { size })
     }
 }
@@ -35,7 +35,7 @@ pub struct RoundBox {
 }
 
 impl RoundBox {
-    pub fn new(size: na::Vector3<f32>, radius: f32) -> Box<Primitive> {
+    pub fn new(size: na::Vector3<f32>, radius: f32) -> Box<dyn Primitive> {
         Box::new(RoundBox { size, radius })
     }
 }

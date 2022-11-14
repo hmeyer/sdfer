@@ -7,7 +7,7 @@ pub struct Sphere {
 }
 
 impl Sphere {
-    pub fn new(radius: f32) -> Box<Primitive> {
+    pub fn new(radius: f32) -> Box<dyn Primitive> {
         Box::new(Sphere { radius })
     }
 }

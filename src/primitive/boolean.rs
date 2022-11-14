@@ -2,7 +2,7 @@ use crate::primitive::Primitive;
 use std::collections::HashSet;
 
 #[derive(Clone)]
-enum BooleanKind {
+pub enum BooleanKind {
     Default,
     Polynomial(f32),      // Supports only two primitives.
     CubicPolynomial(f32), // Supports only two primitives.
@@ -40,9 +40,9 @@ impl BooleanKind {
     fn make_params(num_primitives: usize) -> Vec<String> {
         (0..num_primitives).map(|i| format!("d{}", i)).collect()
     }
-    fn make_function(&self, num_primitives: usize) -> String {
+    fn make_function(&self, num_primitives: usize) -> Result<String, String> {
         if num_primitives < 2 {
-            panic!("Boolean function needs at least to primitives.")
+            return Err("Boolean function needs at least to primitives.".into());
         }
         match self {
             BooleanKind::Default => make_default_min_function(
@@ -73,14 +73,14 @@ impl BooleanKind {
     }
 }
 
-fn make_default_min_function(function_name: &str, params: &[String]) -> String {
+fn make_default_min_function(function_name: &str, params: &[String]) -> Result<String, String> {
     let expr_begin = params[0..params.len() - 1]
         .iter()
         .map(|p| format!("min({}", p))
         .collect::<Vec<_>>()
         .join(", ");
     let expr_end = String::from_utf8(vec![b')'; params.len() - 1]).unwrap();
-    format!(
+    Ok(format!(
         "
 float {}(float {}) {{
 return {expr_begin}, {last_param}{expr_end};
@@ -91,14 +91,17 @@ return {expr_begin}, {last_param}{expr_end};
         expr_begin = expr_begin,
         last_param = params[params.len() - 1],
         expr_end = expr_end
-    )
+    ))
 }
 
-fn make_polynomial_min_function(function_name: &str, num_primitives: usize) -> String {
+fn make_polynomial_min_function(
+    function_name: &str,
+    num_primitives: usize,
+) -> Result<String, String> {
     if num_primitives != 2 {
-        panic!("Polynomial min requires exactly two arguments.");
+        return Err("Polynomial min requires exactly two arguments.".into());
     }
-    format!(
+    Ok(format!(
         "
 float {name}(float d1, float d2, float k) {{
     float h = max(k-abs(d1-d2),0.0);
@@ -106,14 +109,17 @@ float {name}(float d1, float d2, float k) {{
 }}
 ",
         name = function_name
-    )
+    ))
 }
 
-fn make_cubic_polynomial_min_function(function_name: &str, num_primitives: usize) -> String {
+fn make_cubic_polynomial_min_function(
+    function_name: &str,
+    num_primitives: usize,
+) -> Result<String, String> {
     if num_primitives != 2 {
-        panic!("Cubic polynomial min requires exactly two arguments.");
+        return Err("Cubic polynomial min requires exactly two arguments.".into());
     }
-    format!(
+    Ok(format!(
         "
 float {name}(float d1, float d2, float k) {{
     float h = max(k-abs(d1-d2),0.0) / k;
@@ -121,14 +127,14 @@ float {name}(float d1, float d2, float k) {{
 }}
 ",
         name = function_name
-    )
+    ))
 }
 
-fn make_root_min_function(function_name: &str, num_primitives: usize) -> String {
+fn make_root_min_function(function_name: &str, num_primitives: usize) -> Result<String, String> {
     if num_primitives != 2 {
-        panic!("Cubic polynomial min requires exactly two arguments.");
+        return Err("Cubic polynomial min requires exactly two arguments.".into());
     }
-    format!(
+    Ok(format!(
         "
 float {name}(float d0, float d1, float k) {{
     float h = d0 - d1;
@@ -136,28 +142,28 @@ float {name}(float d0, float d1, float k) {{
 }}
 ",
         name = function_name
-    )
+    ))
 }
 
-fn make_chamfer_min_function(function_name: &str, num_primitives: usize) -> String {
+fn make_chamfer_min_function(function_name: &str, num_primitives: usize) -> Result<String, String> {
     if num_primitives != 2 {
-        panic!("Chamfer min requires exactly two arguments.");
+        return Err("Chamfer min requires exactly two arguments.".into());
     }
-    format!(
+    Ok(format!(
         "
 float {name}(float d0, float d1, float k) {{
     return min(min(d0, d1), (d0 - k + d1) * sqrt(0.5));
 }}
 ",
         name = function_name
-    )
+    ))
 }
 
-fn make_stairs_min_function(function_name: &str, num_primitives: usize) -> String {
+fn make_stairs_min_function(function_name: &str, num_primitives: usize) -> Result<String, String> {
     if num_primitives != 2 {
-        panic!("Round min requires exactly two arguments.");
+        return Err("Round min requires exactly two arguments.".into());
     }
-    format!(
+    Ok(format!(
         "
 float {name}(float d0, float d1, float k, float n) {{
     float s = k / n;
@@ -166,14 +172,14 @@ float {name}(float d0, float d1, float k, float n) {{
 }}
 ",
         name = function_name,
-    )
+    ))
 }
 
-fn make_exponential_min_function(function_name: &str, params: &[String]) -> String {
+fn make_exponential_min_function(function_name: &str, params: &[String]) -> Result<String, String> {
     if params.len() < 2 {
-        panic!("Exponential min requires at least two arguments.");
+        return Err("Exponential min requires at least two arguments.".into());
     }
-    format!(
+    Ok(format!(
         "
 float {name}(float {params}, float k) {{
     float res = {expr};
@@ -187,67 +193,41 @@ float {name}(float {params}, float k) {{
             .collect::<Vec<_>>()
             .join(" + "),
         params = params.join(", float "),
-    )
+    ))
 }
 
 #[derive(Clone)]
 pub struct Boolean {
     children: Vec<Box<dyn Primitive>>,
-    smoothness: f32,
     kind: BooleanKind,
     negate: bool,
 }
 
 impl Boolean {
-    pub fn new_union(children: Vec<Box<dyn Primitive>>) -> Result<Box<Boolean>, String> {
-        Boolean::new_with_smoothness_and_negate(children, 0., false)
-    }
-    pub fn new_union_with_smoothness(
+    fn new_maybe_negate(
         children: Vec<Box<dyn Primitive>>,
-        smoothness: f32,
-    ) -> Result<Box<Boolean>, String> {
-        Boolean::new_with_smoothness_and_negate(children, smoothness, false)
-    }
-    fn new_with_smoothness_and_negate(
-        children: Vec<Box<dyn Primitive>>,
-        smoothness: f32,
         negate: bool,
     ) -> Result<Box<Boolean>, String> {
         if children.len() < 2 {
             return Err("Boolean requires at least 2 children.".to_string());
         }
-        let kind = if smoothness == 0.0 {
-            BooleanKind::Default
-        } else {
-            BooleanKind::Stairs(smoothness, 4)
-        };
         Ok(Box::new(Boolean {
             children,
-            smoothness,
-            kind,
+            kind: BooleanKind::Default,
             negate,
         }))
     }
-    pub fn new_intersection(children: Vec<Box<dyn Primitive>>) -> Result<Box<Boolean>, String> {
-        Boolean::new_intersection_with_smoothness(children, 0.)
+    pub fn new_union(children: Vec<Box<dyn Primitive>>) -> Result<Box<Boolean>, String> {
+        Boolean::new_maybe_negate(children, false)
     }
-    pub fn new_intersection_with_smoothness(
-        children: Vec<Box<dyn Primitive>>,
-        smoothness: f32,
-    ) -> Result<Box<Boolean>, String> {
+    pub fn new_intersection(children: Vec<Box<dyn Primitive>>) -> Result<Box<Boolean>, String> {
         let neg_children = children
             .into_iter()
             .map(|child| Box::new(Negation { child: child }) as Box<dyn Primitive>)
             .collect();
-        Boolean::new_with_smoothness_and_negate(neg_children, smoothness, true)
+        Boolean::new_maybe_negate(neg_children, true)
     }
-    pub fn new_difference(children: Vec<Box<dyn Primitive>>) -> Result<Box<Boolean>, String> {
-        Boolean::new_difference_with_smoothness(children, 0.)
-    }
-    pub fn new_difference_with_smoothness(
-        mut children: Vec<Box<dyn Primitive>>,
-        smoothness: f32,
-    ) -> Result<Box<Boolean>, String> {
+    pub fn new_difference(mut children: Vec<Box<dyn Primitive>>) -> Result<Box<Boolean>, String> {
         if children.len() == 0 {
             return Err("Difference requires at least one child.".to_string());
         }
@@ -256,7 +236,13 @@ impl Boolean {
             let child = children.pop().unwrap();
             new_children.push(Box::new(Negation { child }));
         }
-        Boolean::new_intersection_with_smoothness(new_children, smoothness)
+        Boolean::new_intersection(new_children)
+    }
+    pub fn set_kind(&mut self, kind: BooleanKind) -> Result<(), String> {
+        // Try to make a function, for implicit error checking.
+        _ = kind.make_function(self.children.len())?;
+        self.kind = kind;
+        Ok(())
     }
 }
 
@@ -266,7 +252,7 @@ impl Primitive for Boolean {
         for child in &self.children {
             code_set.extend(child.static_code());
         }
-        code_set.insert(self.kind.make_function(self.children.len()));
+        code_set.insert(self.kind.make_function(self.children.len()).unwrap());
         code_set
     }
     fn expression(&self, p: &str) -> String {
@@ -274,11 +260,6 @@ impl Primitive for Boolean {
             .map(|c| c.expression(p))
             .collect::<Vec<_>>()
             .join(", ");
-        let smoothness_exp = if self.smoothness > 0. {
-            format!(", {:.8}", self.smoothness)
-        } else {
-            String::new()
-        };
         return format!(
             "{negate}{fn_name}({child_exps}{extra})",
             negate = if self.negate { "-" } else { "" },
