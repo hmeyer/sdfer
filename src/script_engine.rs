@@ -1,6 +1,6 @@
 use crate::primitive::*;
+use anyhow::{anyhow, bail, Result};
 use rhai::{Array, Dynamic, Engine, EvalAltResult};
-use anyhow::{anyhow, Result, bail};
 
 pub trait ScriptEngine {
     fn eval(&self, script: &str) -> Result<Box<dyn Primitive>>;
@@ -57,6 +57,23 @@ impl RhaiScriptEngine {
             .register_type_with_name::<Box<Sphere>>("Sphere")
             .register_fn("Sphere", Sphere::new)
             .register_fn("Sphere", |r: i32| Sphere::new(r as f32));
+        engine
+            .register_type_with_name::<Box<Torus>>("Torus")
+            .register_fn(
+                "Torus",
+                |inner: f32, outer: f32| -> Result<Box<Primitive>, Box<EvalAltResult>> {
+                    Torus::new(inner, outer).map_err(|e| e.to_string().into())
+                },
+            )
+            .register_fn(
+                "CappedTorus",
+                |inner: f32,
+                 outer: f32,
+                 cap_angle: f32|
+                 -> Result<Box<Primitive>, Box<EvalAltResult>> {
+                    Torus::new_capped(inner, outer, cap_angle).map_err(|e| e.to_string().into())
+                },
+            );
         engine
             .register_type_with_name::<Box<ExactBox>>("Box")
             .register_fn("Box", ExactBox::new);
@@ -173,7 +190,8 @@ impl ScriptEngine for RhaiScriptEngine {
     fn eval(&self, script: &str) -> Result<Box<dyn Primitive>> {
         let result = self
             .engine
-            .eval::<Dynamic>(script).map_err(|e| anyhow!(e.to_string()))?;
+            .eval::<Dynamic>(script)
+            .map_err(|e| anyhow!(e.to_string()))?;
         to_primitive(result)
     }
     fn on_print(&mut self, callback: impl Fn(&str) + 'static) {

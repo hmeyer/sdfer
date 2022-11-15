@@ -1,6 +1,6 @@
 use crate::primitive::Primitive;
+use anyhow::{bail, Result};
 use std::collections::HashSet;
-use anyhow::{Result, bail};
 
 #[derive(Clone)]
 pub enum BooleanKind {
@@ -95,12 +95,12 @@ return {expr_begin}, {last_param}{expr_end};
     ))
 }
 
-fn make_polynomial_min_function(
-    function_name: &str,
-    num_primitives: usize,
-) -> Result<String> {
+fn make_polynomial_min_function(function_name: &str, num_primitives: usize) -> Result<String> {
     if num_primitives != 2 {
-        bail!("Polynomial min requires exactly two arguments (got {}).", num_primitives);
+        bail!(
+            "Polynomial min requires exactly two arguments (got {}).",
+            num_primitives
+        );
     }
     Ok(format!(
         "
@@ -118,7 +118,10 @@ fn make_cubic_polynomial_min_function(
     num_primitives: usize,
 ) -> Result<String> {
     if num_primitives != 2 {
-        bail!("Cubic polynomial min requires exactly two arguments (got {}).", num_primitives);
+        bail!(
+            "Cubic polynomial min requires exactly two arguments (got {}).",
+            num_primitives
+        );
     }
     Ok(format!(
         "
@@ -133,7 +136,10 @@ float {name}(float d1, float d2, float k) {{
 
 fn make_root_min_function(function_name: &str, num_primitives: usize) -> Result<String> {
     if num_primitives != 2 {
-        bail!("Root min requires exactly two arguments (got {}).", num_primitives);
+        bail!(
+            "Root min requires exactly two arguments (got {}).",
+            num_primitives
+        );
     }
     Ok(format!(
         "
@@ -148,7 +154,10 @@ float {name}(float d0, float d1, float k) {{
 
 fn make_chamfer_min_function(function_name: &str, num_primitives: usize) -> Result<String> {
     if num_primitives != 2 {
-        bail!("Chamfer min requires exactly two arguments (got {}).", num_primitives);
+        bail!(
+            "Chamfer min requires exactly two arguments (got {}).",
+            num_primitives
+        );
     }
     Ok(format!(
         "
@@ -162,7 +171,10 @@ float {name}(float d0, float d1, float k) {{
 
 fn make_stairs_min_function(function_name: &str, num_primitives: usize) -> Result<String> {
     if num_primitives != 2 {
-        bail!("Stairs min requires exactly two arguments (got {}).", num_primitives);
+        bail!(
+            "Stairs min requires exactly two arguments (got {}).",
+            num_primitives
+        );
     }
     Ok(format!(
         "
@@ -178,7 +190,10 @@ float {name}(float d0, float d1, float k, float n) {{
 
 fn make_exponential_min_function(function_name: &str, params: &[String]) -> Result<String> {
     if params.len() < 2 {
-        bail!("Exponential min requires at least two arguments (got {}).", params.len());
+        bail!(
+            "Exponential min requires at least two arguments (got {}).",
+            params.len()
+        );
     }
     Ok(format!(
         "
@@ -205,12 +220,12 @@ pub struct Boolean {
 }
 
 impl Boolean {
-    fn new_maybe_negate(
-        children: Vec<Box<dyn Primitive>>,
-        negate: bool,
-    ) -> Result<Box<Boolean>> {
+    fn new_maybe_negate(children: Vec<Box<dyn Primitive>>, negate: bool) -> Result<Box<Boolean>> {
         if children.len() < 2 {
-            bail!("Boolean requires at least 2 children (got only {}).", children.len());
+            bail!(
+                "Boolean requires at least 2 children (got only {}).",
+                children.len()
+            );
         }
         Ok(Box::new(Boolean {
             children,

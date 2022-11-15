@@ -52,6 +52,9 @@ fn shader_mat3(m: &na::Matrix3<f32>) -> String {
 mod sphere;
 pub use sphere::Sphere;
 
+mod torus;
+pub use torus::Torus;
+
 mod boxes;
 pub use boxes::{ExactBox, RoundBox};
 
