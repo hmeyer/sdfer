@@ -13,7 +13,7 @@ impl ExactBox {
         if size.min() <= 0. {
             bail!("all dimensions must be greater zero (was {}).", size);
         }
-        Ok(Box::new(ExactBox { size }))
+        Ok(Box::new(ExactBox { size: size / 2. }))
     }
 }
 
@@ -46,7 +46,10 @@ impl RoundBox {
         if radius < 0. {
             bail!("radius must be greater equal zero (was {}).", radius);
         }
-        Ok(Box::new(RoundBox { size, radius }))
+        Ok(Box::new(RoundBox {
+            size: size / 2.0 - na::Vector3::new(radius, radius, radius),
+            radius,
+        }))
     }
 }
 

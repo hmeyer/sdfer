@@ -8,12 +8,12 @@
 let sphere = Sphere(1.);
 sphere = sphere.scale(0.5, 0.8, 1.5);
 
-let box1 = Box(0.4, 0.6, 1.);
+let box1 = Box(0.8, 1.2, 2.);
 box1 = box1.rotate_euler(0.5, 0., 0.);
 
 let diff = Difference([box1, sphere]);
 
-let box2 = RoundBox(1., 0.5, 0.6, 0.2);
+let box2 = RoundBox(2., 1.0, 1.2, 0.2);
 box2 = box2.translate(1.,1.,1.);
 
 let u = Union([diff, box2]);
