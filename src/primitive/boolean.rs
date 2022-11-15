@@ -10,7 +10,7 @@ pub enum BooleanKind {
     Root(f32),            // Supports only two primitives.
     Exponential(f32),     // smoothness = 10
     Chamfer(f32),
-    Stairs(f32, usize),
+    Stairs { d: f32, num: usize },
 }
 
 impl BooleanKind {
@@ -24,7 +24,7 @@ impl BooleanKind {
             BooleanKind::Root(_) => format!("opSmoothMinRoot{}", num_primitives),
             BooleanKind::Exponential(_) => format!("opSmoothMinExponential{}", num_primitives),
             BooleanKind::Chamfer(_) => format!("opChamferMin{}", num_primitives),
-            BooleanKind::Stairs(_, _) => format!("opStairsMin{}", num_primitives),
+            BooleanKind::Stairs { d: _, num: _ } => format!("opStairsMin{}", num_primitives),
         }
     }
     fn make_extra_params(&self) -> String {
@@ -35,7 +35,7 @@ impl BooleanKind {
             BooleanKind::Root(s) => format!(", {:.8}", s),
             BooleanKind::Exponential(s) => format!(", {:.8}", s),
             BooleanKind::Chamfer(s) => format!(", {:.8}", s),
-            BooleanKind::Stairs(s, n) => format!(", {:.8}, {:.1}", s, *n as f32),
+            BooleanKind::Stairs { d: s, num: n } => format!(", {:.8}, {:.1}", s, *n as f32),
         }
     }
     fn make_params(num_primitives: usize) -> Vec<String> {
@@ -67,7 +67,7 @@ impl BooleanKind {
             BooleanKind::Chamfer(_) => {
                 make_chamfer_min_function(&self.function_name(num_primitives), num_primitives)
             }
-            BooleanKind::Stairs(_, _) => {
+            BooleanKind::Stairs { d: _, num: _ } => {
                 make_stairs_min_function(&self.function_name(num_primitives), num_primitives)
             }
         }

@@ -157,8 +157,11 @@ impl RhaiScriptEngine {
                  n: i32|
                  -> Result<Box<Boolean>, Box<EvalAltResult>> {
                     let mut b = b.clone();
-                    b.set_kind(BooleanKind::Stairs(k, n as usize))
-                        .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
+                    b.set_kind(BooleanKind::Stairs {
+                        d: k,
+                        num: n as usize,
+                    })
+                    .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
                     Ok(b)
                 },
             );
