@@ -18,50 +18,33 @@ impl RhaiScriptEngine {
             .register_type_with_name::<na::Vector3<f32>>("Vector")
             .register_fn("Vector", |x: f32, y: f32, z: f32| {
                 na::Vector3::<f32>::new(x as f32, y as f32, z as f32)
-            })
-            .register_fn("Vector", |x: f32, y: f32, z: i32| {
-                na::Vector3::<f32>::new(x as f32, y as f32, z as f32)
-            })
-            .register_fn("Vector", |x: f32, y: i32, z: f32| {
-                na::Vector3::<f32>::new(x as f32, y as f32, z as f32)
-            })
-            .register_fn("Vector", |x: f32, y: i32, z: i32| {
-                na::Vector3::<f32>::new(x as f32, y as f32, z as f32)
-            })
-            .register_fn("Vector", |x: i32, y: f32, z: f32| {
-                na::Vector3::<f32>::new(x as f32, y as f32, z as f32)
-            })
-            .register_fn("Vector", |x: i32, y: f32, z: i32| {
-                na::Vector3::<f32>::new(x as f32, y as f32, z as f32)
-            })
-            .register_fn("Vector", |x: i32, y: i32, z: f32| {
-                na::Vector3::<f32>::new(x as f32, y as f32, z as f32)
-            })
-            .register_fn("Vector", |x: i32, y: i32, z: i32| {
-                na::Vector3::<f32>::new(x as f32, y as f32, z as f32)
             });
         engine
             .register_type_with_name::<Box<dyn Primitive>>("Primitive")
             .register_fn(
                 "translate",
-                |prim: Box<dyn Primitive>, t: na::Vector3<f32>| prim.translate(t),
+                |prim: Box<dyn Primitive>, x: f32, y: f32, z: f32| {
+                    prim.translate(na::Vector3::new(x, y, z))
+                },
             )
             .register_fn(
                 "rotate_euler",
                 |prim: Box<dyn Primitive>, r: f32, p: f32, y: f32| prim.rotate_euler(r, p, y),
             )
-            .register_fn("scale", |prim: Box<dyn Primitive>, s: na::Vector3<f32>| {
-                prim.scale(s)
-            });
+            .register_fn(
+                "scale",
+                |prim: Box<dyn Primitive>, x: f32, y: f32, z: f32| {
+                    prim.scale(na::Vector3::new(x, y, z))
+                },
+            );
         engine
             .register_type_with_name::<Box<Sphere>>("Sphere")
-            .register_fn("Sphere", Sphere::new)
-            .register_fn("Sphere", |r: i32| Sphere::new(r as f32));
+            .register_fn("Sphere", Sphere::new);
         engine
             .register_type_with_name::<Box<Torus>>("Torus")
             .register_fn(
                 "Torus",
-                |inner: f32, outer: f32| -> Result<Box<Primitive>, Box<EvalAltResult>> {
+                |inner: f32, outer: f32| -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
                     Torus::new(inner, outer).map_err(|e| e.to_string().into())
                 },
             )
@@ -70,20 +53,20 @@ impl RhaiScriptEngine {
                 |inner: f32,
                  outer: f32,
                  cap_angle: f32|
-                 -> Result<Box<Primitive>, Box<EvalAltResult>> {
+                 -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
                     Torus::new_capped(inner, outer, cap_angle).map_err(|e| e.to_string().into())
                 },
             );
         engine
             .register_type_with_name::<Box<ExactBox>>("Box")
-            .register_fn("Box", ExactBox::new);
+            .register_fn("Box", |x: f32, y: f32, z: f32| {
+                ExactBox::new(na::Vector3::new(x, y, z))
+            });
         engine
             .register_type_with_name::<Box<RoundBox>>("RoundBox")
-            .register_fn("RoundBox", RoundBox::new)
-            .register_fn("RoundBox", |extend: na::Vector3<f32>, radius: i32| {
-                RoundBox::new(extend, radius as f32)
+            .register_fn("RoundBox", |x: f32, y: f32, z: f32, r: f32| {
+                RoundBox::new(na::Vector3::new(x, y, z), r)
             });
-
         engine
             .register_type_with_name::<Box<Boolean>>("Boolean")
             .register_fn(
