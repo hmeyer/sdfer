@@ -1,4 +1,5 @@
 use crate::primitive::Primitive;
+use anyhow::{bail, Result};
 use std::collections::HashSet;
 
 #[derive(Clone)]
@@ -7,8 +8,11 @@ pub struct Sphere {
 }
 
 impl Sphere {
-    pub fn new(radius: f32) -> Box<dyn Primitive> {
-        Box::new(Sphere { radius })
+    pub fn new(radius: f32) -> Result<Box<dyn Primitive>> {
+        if radius <= 0. {
+            bail!("radius should be positive (was {}).", radius);
+        }
+        Ok(Box::new(Sphere { radius }))
     }
 }
 

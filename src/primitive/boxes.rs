@@ -1,5 +1,6 @@
 use super::shader_vec3;
 use crate::primitive::Primitive;
+use anyhow::{bail, Result};
 use std::collections::HashSet;
 
 #[derive(Clone)]
@@ -8,8 +9,11 @@ pub struct ExactBox {
 }
 
 impl ExactBox {
-    pub fn new(size: na::Vector3<f32>) -> Box<dyn Primitive> {
-        Box::new(ExactBox { size })
+    pub fn new(size: na::Vector3<f32>) -> Result<Box<dyn Primitive>> {
+        if size.min() <= 0. {
+            bail!("all dimensions must be greater zero (was {}).", size);
+        }
+        Ok(Box::new(ExactBox { size }))
     }
 }
 
@@ -35,8 +39,14 @@ pub struct RoundBox {
 }
 
 impl RoundBox {
-    pub fn new(size: na::Vector3<f32>, radius: f32) -> Box<dyn Primitive> {
-        Box::new(RoundBox { size, radius })
+    pub fn new(size: na::Vector3<f32>, radius: f32) -> Result<Box<dyn Primitive>> {
+        if size.min() <= 0. {
+            bail!("all dimensions must be greater zero (was {}).", size);
+        }
+        if radius < 0. {
+            bail!("radius must be greater equal zero (was {}).", radius);
+        }
+        Ok(Box::new(RoundBox { size, radius }))
     }
 }
 

@@ -39,7 +39,12 @@ impl RhaiScriptEngine {
             );
         engine
             .register_type_with_name::<Box<Sphere>>("Sphere")
-            .register_fn("Sphere", Sphere::new);
+            .register_fn(
+                "Sphere",
+                |r: f32| -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
+                    Sphere::new(r).map_err(|e| e.to_string().into())
+                },
+            );
         engine
             .register_type_with_name::<Box<Torus>>("Torus")
             .register_fn(
@@ -59,14 +64,24 @@ impl RhaiScriptEngine {
             );
         engine
             .register_type_with_name::<Box<ExactBox>>("Box")
-            .register_fn("Box", |x: f32, y: f32, z: f32| {
-                ExactBox::new(na::Vector3::new(x, y, z))
-            });
+            .register_fn(
+                "Box",
+                |x: f32, y: f32, z: f32| -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
+                    ExactBox::new(na::Vector3::new(x, y, z)).map_err(|e| e.to_string().into())
+                },
+            );
         engine
             .register_type_with_name::<Box<RoundBox>>("RoundBox")
-            .register_fn("RoundBox", |x: f32, y: f32, z: f32, r: f32| {
-                RoundBox::new(na::Vector3::new(x, y, z), r)
-            });
+            .register_fn(
+                "RoundBox",
+                |x: f32,
+                 y: f32,
+                 z: f32,
+                 r: f32|
+                 -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
+                    RoundBox::new(na::Vector3::new(x, y, z), r).map_err(|e| e.to_string().into())
+                },
+            );
         engine
             .register_type_with_name::<Box<Boolean>>("Boolean")
             .register_fn(
