@@ -56,6 +56,36 @@ impl RhaiScriptEngine {
                 },
             );
         engine
+            .register_type_with_name::<Box<Sphere>>("Cylinder")
+            .register_fn(
+                "Cylinder",
+                |r: f32| -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
+                    Cylinder::new_infinite(r).map_err(|e| e.to_string().into())
+                },
+            )
+            .register_fn(
+                "Cylinder",
+                |r: f32,
+                 begin: na::Vector3<f32>,
+                 end: na::Vector3<f32>|
+                 -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
+                    Cylinder::new(r, begin, end).map_err(|e| e.to_string().into())
+                },
+            );
+        engine
+            .register_type_with_name::<Box<Sphere>>("RoundedCylinder")
+            .register_fn(
+                "RoundedCylinder",
+                |main_radius: f32,
+                 rounding_radius: f32,
+                 height: f32|
+                 -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
+                    RoundedCylinder::new(main_radius, rounding_radius, height)
+                        .map_err(|e| e.to_string().into())
+                },
+            );
+
+        engine
             .register_type_with_name::<Box<Torus>>("Torus")
             .register_fn(
                 "Torus",

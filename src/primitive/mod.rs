@@ -61,6 +61,9 @@ pub use torus::Torus;
 mod boxes;
 pub use boxes::{ExactBox, RoundBox};
 
+mod cylinder;
+pub use cylinder::{Cylinder, RoundedCylinder};
+
 mod boolean;
 pub use boolean::{Boolean, BooleanKind};
 
