@@ -38,6 +38,16 @@ impl RhaiScriptEngine {
                 },
             );
         engine
+            .register_type_with_name::<Box<Sphere>>("Plane")
+            .register_fn(
+                "Plane",
+                |normal: na::Vector3<f32>,
+                 d: f32|
+                 -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
+                    Plane::new(normal, d).map_err(|e| e.to_string().into())
+                },
+            );
+        engine
             .register_type_with_name::<Box<Sphere>>("Sphere")
             .register_fn(
                 "Sphere",
@@ -163,6 +173,22 @@ impl RhaiScriptEngine {
                     })
                     .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
                     Ok(b)
+                },
+            )
+            .register_fn(
+                "translate",
+                |prim: &mut Box<Boolean>, x: f32, y: f32, z: f32| {
+                    prim.translate(na::Vector3::new(x, y, z))
+                },
+            )
+            .register_fn(
+                "rotate_euler",
+                |prim: &mut Box<Boolean>, r: f32, p: f32, y: f32| prim.rotate_euler(r, p, y),
+            )
+            .register_fn(
+                "scale",
+                |prim: &mut Box<Boolean>, x: f32, y: f32, z: f32| {
+                    prim.scale(na::Vector3::new(x, y, z))
                 },
             );
         let engine = engine;

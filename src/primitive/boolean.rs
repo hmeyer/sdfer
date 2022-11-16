@@ -5,12 +5,12 @@ use std::collections::HashSet;
 #[derive(Clone)]
 pub enum BooleanKind {
     Default,
-    Polynomial(f32),      // Supports only two primitives.
-    CubicPolynomial(f32), // Supports only two primitives.
-    Root(f32),            // Supports only two primitives.
-    Exponential(f32),     // smoothness = 10
-    Chamfer(f32),
-    Stairs { d: f32, num: usize },
+    Polynomial(f32),               // Supports only two primitives.
+    CubicPolynomial(f32),          // Supports only two primitives.
+    Root(f32),                     // Supports only two primitives.
+    Exponential(f32),              // smoothness = 10
+    Chamfer(f32),                  // Supports only two primitives.
+    Stairs { d: f32, num: usize }, // Supports only two primitives.
 }
 
 impl BooleanKind {

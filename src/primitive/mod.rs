@@ -49,6 +49,9 @@ fn shader_mat3(m: &na::Matrix3<f32>) -> String {
     )
 }
 
+mod plane;
+pub use plane::Plane;
+
 mod sphere;
 pub use sphere::Sphere;
 
