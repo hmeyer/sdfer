@@ -69,3 +69,6 @@ pub use boolean::{Boolean, BooleanKind};
 
 mod transformations;
 pub use transformations::{Rotate, Scale, Translate};
+
+mod repeat;
+pub use repeat::Repeat;

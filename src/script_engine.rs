@@ -17,7 +17,12 @@ impl RhaiScriptEngine {
         engine
             .register_type_with_name::<na::Vector3<f32>>("Vector")
             .register_fn("Vector", |x: f32, y: f32, z: f32| {
-                na::Vector3::<f32>::new(x as f32, y as f32, z as f32)
+                na::Vector3::<f32>::new(x, y, z)
+            });
+        engine
+            .register_type_with_name::<na::Vector3<i32>>("Vector")
+            .register_fn("Vector", |x: i32, y: i32, z: i32| {
+                na::Vector3::<i32>::new(x, y, z)
             });
         engine
             .register_type_with_name::<Box<dyn Primitive>>("Primitive")
@@ -35,6 +40,18 @@ impl RhaiScriptEngine {
                 "scale",
                 |prim: Box<dyn Primitive>, x: f32, y: f32, z: f32| {
                     prim.scale(na::Vector3::new(x, y, z))
+                },
+            )
+            .register_fn(
+                "repeat",
+                |prim: Box<dyn Primitive>,
+                 bound: na::Vector3<f32>,
+                 repeats_min: na::Vector3<i32>,
+                 repeats_max: na::Vector3<i32>|
+                 -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
+                    let r = Repeat::new(prim, bound, repeats_min, repeats_max)
+                        .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
+                    Ok(r as Box<dyn Primitive>)
                 },
             );
         engine
@@ -219,6 +236,18 @@ impl RhaiScriptEngine {
                 "scale",
                 |prim: &mut Box<Boolean>, x: f32, y: f32, z: f32| {
                     prim.scale(na::Vector3::new(x, y, z))
+                },
+            )
+            .register_fn(
+                "repeat",
+                |prim: &mut Box<Boolean>,
+                 bound: na::Vector3<f32>,
+                 repeats_min: na::Vector3<i32>,
+                 repeats_max: na::Vector3<i32>|
+                 -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
+                    let r = Repeat::new(prim.clone(), bound, repeats_min, repeats_max)
+                        .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
+                    Ok(r as Box<dyn Primitive>)
                 },
             );
         let engine = engine;
