@@ -53,6 +53,12 @@ impl RhaiScriptEngine {
                         .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
                     Ok(r as Box<dyn Primitive>)
                 },
+            )
+            .register_fn(
+                "twist",
+                |prim: Box<dyn Primitive>, height_per_rotation: f32| {
+                    Twist::new(prim, height_per_rotation) as Box<dyn Primitive>
+                },
             );
         engine
             .register_type_with_name::<Box<Sphere>>("Plane")
