@@ -5,19 +5,15 @@
   <body>
     <canvas id="canvas" height="480" width="640"></canvas>
     <textarea id="program" rows="20" cols="33">
-let sphere = Sphere(1.);
-sphere = sphere.scale(0.5, 0.8, 1.5);
+let box = Box(1.0, 1.0, 1.0);
+box = box.twist(2.0);
+box = box.rotate_deg(0.,90.,0.);
+box = box.scale(3.0, 1.,1.);
+box = box.translate(0.,1.,0.);
 
-let box1 = Box(0.8, 1.2, 2.);
-box1 = box1.rotate_euler(0.5, 0., 0.);
+let bbox = box.bend(3.0);
 
-let diff = Difference([box1, sphere]);
-
-let box2 = RoundBox(2., 1.0, 1.2, 0.2);
-box2 = box2.translate(1.,1.,1.);
-
-let u = Union([diff, box2]);
-u.stairs(0.2, 4)
+Union([Sphere(0.5),bbox]).stairs(0.8, 6)
     </textarea>
     <button id="run" type="button">Run</button>    
     <textarea id="output" rows="20" cols="33" readonly="true"></textarea>    

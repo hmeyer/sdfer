@@ -1,6 +1,7 @@
 use super::primitive::*;
 use anyhow::{anyhow, bail, Result};
 use rhai::{Array, Dynamic, Engine, EvalAltResult};
+use std::f32::consts::PI;
 
 pub trait ScriptEngine {
     fn eval(&self, script: &str) -> Result<Box<dyn Primitive>>;
@@ -33,8 +34,14 @@ impl RhaiScriptEngine {
                 },
             )
             .register_fn(
-                "rotate_euler",
+                "rotate_rad",
                 |prim: Box<dyn Primitive>, r: f32, p: f32, y: f32| prim.rotate_euler(r, p, y),
+            )
+            .register_fn(
+                "rotate_deg",
+                |prim: Box<dyn Primitive>, r: f32, p: f32, y: f32| {
+                    prim.rotate_euler(r * PI / 180., p * PI / 180., y * PI / 180.)
+                },
             )
             .register_fn(
                 "scale",
@@ -58,6 +65,12 @@ impl RhaiScriptEngine {
                 "twist",
                 |prim: Box<dyn Primitive>, height_per_rotation: f32| {
                     Twist::new(prim, height_per_rotation) as Box<dyn Primitive>
+                },
+            )
+            .register_fn(
+                "bend",
+                |prim: Box<dyn Primitive>, distance_for_full_circle: f32| {
+                    Bend::new(prim, distance_for_full_circle) as Box<dyn Primitive>
                 },
             );
         engine
@@ -235,8 +248,14 @@ impl RhaiScriptEngine {
                 },
             )
             .register_fn(
-                "rotate_euler",
+                "rotate_rad",
                 |prim: &mut Box<Boolean>, r: f32, p: f32, y: f32| prim.rotate_euler(r, p, y),
+            )
+            .register_fn(
+                "rotate_deg",
+                |prim: &mut Box<Boolean>, r: f32, p: f32, y: f32| {
+                    prim.rotate_euler(r * PI / 180., p * PI / 180., y * PI / 180.)
+                },
             )
             .register_fn(
                 "scale",
@@ -254,6 +273,18 @@ impl RhaiScriptEngine {
                     let r = Repeat::new(prim.clone(), bound, repeats_min, repeats_max)
                         .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
                     Ok(r as Box<dyn Primitive>)
+                },
+            )
+            .register_fn(
+                "twist",
+                |prim: &mut Box<Boolean>, height_per_rotation: f32| {
+                    Twist::new(prim.clone(), height_per_rotation) as Box<dyn Primitive>
+                },
+            )
+            .register_fn(
+                "bend",
+                |prim: &mut Box<Boolean>, distance_for_full_circle: f32| {
+                    Bend::new(prim.clone(), distance_for_full_circle) as Box<dyn Primitive>
                 },
             );
         let engine = engine;

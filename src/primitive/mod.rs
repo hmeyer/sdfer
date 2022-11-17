@@ -74,4 +74,4 @@ mod repeat;
 pub use repeat::Repeat;
 
 mod warp;
-pub use warp::Twist;
+pub use warp::{Bend, Twist};
