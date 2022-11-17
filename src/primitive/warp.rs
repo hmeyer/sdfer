@@ -19,14 +19,26 @@ impl Twist {
 
 impl Primitive for Twist {
     fn static_code(&self) -> HashSet<String> {
-        self.primitive.static_code()
+        let mut code_set = self.primitive.static_code();
+        code_set.insert(
+            r#"
+vec3 TwistXY(vec3 p, float rad_per_h) {
+    float a = p.z * rad_per_h;
+    float sin_a = sin(a);
+    float cos_a = cos(a);
+    mat2 rmat = mat2(cos_a, -sin_a, sin_a, cos_a);
+    return vec3(rmat * p.xy, p.z);
+}
+"#
+            .to_string(),
+        );
+        code_set
     }
     fn expression(&self, p: &str) -> String {
-        let a = format!("({}).z * {:.8}", p, 2. * PI / self.height_per_rotation);
         self.primitive.expression(&format!(
-            "vec3(mat2(cos({a}), -sin({a}), sin({a}), cos({a})) * ({p}).xy, ({p}).z)",
-            a = a,
-            p = p
+            "TwistXY({}, {:.8})",
+            p,
+            2. * PI / self.height_per_rotation
         ))
     }
 }
