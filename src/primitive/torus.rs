@@ -1,6 +1,7 @@
-use crate::primitive::Primitive;
+use super::Primitive;
 use anyhow::{bail, Result};
 use std::collections::HashSet;
+use std::f32::consts::PI;
 
 #[derive(Clone)]
 pub struct Torus {
@@ -25,7 +26,7 @@ impl Torus {
         }
         match cap_angle {
             Some(a) if a < 0. => bail!("cap_angle must be positive (was {})!", a),
-            Some(a) if a > std::f32::consts::PI => {
+            Some(a) if a > PI => {
                 bail!("cap_angle must be less equal than pi (was {})!", a)
             }
             _ => {}

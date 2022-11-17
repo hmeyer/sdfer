@@ -1,5 +1,4 @@
-use super::{shader_mat3, shader_vec3};
-use crate::primitive::Primitive;
+use super::{shader_mat3, shader_vec3, Primitive};
 use std::collections::HashSet;
 
 #[derive(Clone)]

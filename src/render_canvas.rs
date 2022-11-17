@@ -1,5 +1,5 @@
-use crate::primitive::Primitive;
-use crate::renderer;
+use super::renderer;
+use super::Primitive;
 use shadercanvas::ShaderCanvas;
 use std::cell::RefCell;
 use std::rc::Rc;

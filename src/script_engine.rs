@@ -1,4 +1,4 @@
-use crate::primitive::*;
+use super::primitive::*;
 use anyhow::{anyhow, bail, Result};
 use rhai::{Array, Dynamic, Engine, EvalAltResult};
 

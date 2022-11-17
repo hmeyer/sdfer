@@ -1,5 +1,4 @@
-use super::shader_vec3;
-use crate::primitive::Primitive;
+use super::{shader_vec3, Primitive};
 use anyhow::{bail, Result};
 use std::collections::HashSet;
 

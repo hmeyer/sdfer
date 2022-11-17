@@ -1,4 +1,4 @@
-use crate::primitive::Primitive;
+use super::Primitive;
 use anyhow::{bail, Result};
 use std::collections::HashSet;
 

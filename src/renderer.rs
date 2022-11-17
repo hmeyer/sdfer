@@ -1,4 +1,4 @@
-use crate::primitive::Primitive;
+use super::Primitive;
 
 pub fn generate_renderer_shader(obj: &dyn Primitive) -> String {
     let main_renderer = include_str!("renderer.glsl");

@@ -1,4 +1,4 @@
-use crate::primitive::Primitive;
+use super::Primitive;
 use std::collections::HashSet;
 use std::f32::consts::PI;
 

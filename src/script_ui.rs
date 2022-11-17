@@ -1,5 +1,5 @@
-use crate::primitive::Primitive;
-use crate::script_engine::ScriptEngine;
+use super::script_engine::ScriptEngine;
+use super::Primitive;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{HtmlButtonElement, HtmlTextAreaElement};
