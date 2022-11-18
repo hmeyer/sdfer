@@ -15,13 +15,40 @@ pub struct RhaiScriptEngine {
 impl RhaiScriptEngine {
     pub fn new() -> RhaiScriptEngine {
         let mut engine = Engine::new();
+        engine.set_max_expr_depths(32, 32);
+        engine.set_fast_operators(false);
         engine
-            .register_type_with_name::<na::Vector3<f32>>("Vector")
+            .register_type_with_name::<na::Vector3<f32>>("Vector_f32")
             .register_fn("Vector", |x: f32, y: f32, z: f32| {
                 na::Vector3::<f32>::new(x, y, z)
-            });
+            })
+            .register_indexer_get(|v: &mut na::Vector3<f32>, i: i32| v[i as usize])
+            .register_fn("to_string", |v: &mut na::Vector3<f32>| {
+                format!("Vector_f32{:?}", v)
+            })
+            .register_fn("norm", |v: &mut na::Vector3<f32>| v.norm())
+            .register_fn("-", |v: na::Vector3<f32>| -v)
+            .register_fn("/", |v: na::Vector3<f32>, s: f32| v / s)
+            .register_fn("*", |v: na::Vector3<f32>, s: f32| v * s)
+            .register_fn("*", |s: f32, v: na::Vector3<f32>| v * s)
+            .register_fn("+", |v: na::Vector3<f32>, w: na::Vector3<f32>| v + w)
+            .register_fn("-", |v: na::Vector3<f32>, w: na::Vector3<f32>| v - w)
+            .register_fn("*", |v: na::Vector3<f32>, w: na::Vector3<f32>| {
+                v.component_mul(&w)
+            })
+            .register_fn("/", |v: na::Vector3<f32>, w: na::Vector3<f32>| {
+                v.component_div(&w)
+            })
+            .register_fn(
+                "dot",
+                |v: &mut na::Vector3<f32>, other: na::Vector3<f32>| v.dot(&other),
+            )
+            .register_fn(
+                "cross",
+                |v: &mut na::Vector3<f32>, other: na::Vector3<f32>| v.cross(&other),
+            );
         engine
-            .register_type_with_name::<na::Vector3<i32>>("Vector")
+            .register_type_with_name::<na::Vector3<i32>>("Vector_i32")
             .register_fn("Vector", |x: i32, y: i32, z: i32| {
                 na::Vector3::<i32>::new(x, y, z)
             });

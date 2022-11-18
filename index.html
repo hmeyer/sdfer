@@ -5,15 +5,162 @@
   <body>
     <canvas id="canvas" height="480" width="640"></canvas>
     <textarea id="program" rows="20" cols="33">
-let box = Box(1.0, 1.0, 1.0);
-box = box.twist(2.0);
-box = box.rotate_deg(0.,90.,0.);
-box = box.scale(3.0, 1.,1.);
-box = box.translate(0.,1.,0.);
+// Polyeder is a list: [faces, vertices]
+// faces is a list of f32 Vectors
+// vertices is a list of f32 Vectors
 
-let bbox = box.bend(3.0);
+const EPS = 1e-3;
+const PHI = (1. + sqrt(5.)) / 2.;
 
-Union([Sphere(0.5),bbox]).stairs(0.8, 6)
+fn roll(v, i) {
+  if i == 0 {
+    return v;
+  }
+  if i == 1 {
+    return Vector(v[1], v[2], v[0]);
+  }
+  if i == 2 {
+    return Vector(v[2], v[0], v[1]);
+  }
+  throw "invalid roll";
+}
+
+fn autoface(polyeder) {
+  // WARNING: ONLY WORKS IF ALL EDGES HAVE EQUAL LENGTH
+  let edge_length = 1e10;
+  for (a, ai) in polyeder[1] {
+    for (b, bi) in polyeder[1] {
+      if ai == bi {
+        continue;
+      }
+      let l = (a - b).norm();
+      if l < edge_length {
+        edge_length = l;
+      }
+    }
+  }
+
+  for (a, ai) in polyeder[1] {
+    for (b, bi) in polyeder[1] {
+      if bi <= ai || (a - b).norm() > (edge_length + global::EPS) {
+        continue;
+      }
+      for (c, ci) in polyeder[1] {
+        if ci <= bi || (a - c).norm() > (edge_length + global::EPS) {
+          continue;
+        }
+        let n = (b - a).cross(c - a);
+        n /= n.norm();
+        let d = n.dot(a);
+        if d < 0. {
+          n = -n;
+          d = -d;
+        }
+        let f = true;
+        for p in polyeder[1] {
+          if n.dot(p) > (d + global::EPS) {
+            f = false;
+            break;
+          }
+        }
+        if f {
+          polyeder[0].push([n, -d]);
+        }
+      }
+    }
+  }
+  return polyeder;
+}
+
+
+fn make_obj(polyeder) {
+  let planes = [];
+  for f in polyeder[0] {
+    planes.push(Plane(f[0], f[1]));
+  }
+  return Intersection(planes);
+}
+
+fn addpointsevensgn(polyeder, p) {
+  for m in [Vector( 1.,  1., 1.),
+            Vector(-1., -1., 1.),
+            Vector(-1.,  1.,-1.),
+            Vector( 1., -1.,-1.)] {
+  polyeder[1].push(m * p);
+}
+  return polyeder;
+}
+
+fn addpointssgn(polyeder, a, s) {
+  polyeder[1].push(a);
+  if s[0] != 0. {
+    polyeder = addpointssgn(polyeder, a * Vector(-1.,1.,1.), s * Vector(0.,1.,1.));
+  }
+  if s[1] != 0. {
+    polyeder = addpointssgn(polyeder, a * Vector(1.,-1.,1.), s * Vector(0.,0.,1.));
+  }
+  if s[2] != 0. {
+    polyeder[1].push(a * Vector(1.,1.,-1.));
+  }
+  return polyeder;
+}
+
+fn addevenpermssgn(polyeder, a, s) {
+  for r in 0..3 {
+    polyeder = addpointssgn(polyeder, roll(a, r), roll(s, r));
+  }
+  return polyeder;
+}
+
+fn tetrahedron() {
+  let polyeder = [[], []];
+  polyeder = addpointsevensgn(polyeder, Vector(1., 1., 1.));
+  return autoface(polyeder);
+  return make_obj(polyeder);
+}
+
+fn hexahedron() {
+  let polyeder = [[], []];
+  polyeder = addpointssgn(polyeder, Vector(1., 1., 1.), Vector(1., 1., 1.));
+  return autoface(polyeder);
+}
+
+fn octahedron() {
+  let polyeder = [[], []];
+  polyeder = addevenpermssgn(polyeder, Vector(1.,0.,0.), Vector(1.,0.,0.));
+  return autoface(polyeder);
+}
+
+fn dodecahedron() {
+  let polyeder = [[], []];
+  polyeder = addpointssgn(polyeder, Vector(1.,1.,1.), Vector(1.,1.,1.));
+  polyeder = addevenpermssgn(polyeder, Vector(0., 1. / global::PHI, global::PHI) , Vector(0.,1.,1.));
+  return autoface(polyeder);
+}
+
+fn icosahedron() {
+  let polyeder = [[], []];
+  polyeder = addevenpermssgn(polyeder, Vector(0., 1., global::PHI) , Vector(0.,1.,1.));
+  return autoface(polyeder);
+}
+
+let polys = [];
+polys.push(make_obj(tetrahedron()));
+polys.push(make_obj(hexahedron()));
+polys.push(make_obj(octahedron()));
+polys.push(make_obj(dodecahedron()));
+polys.push(make_obj(icosahedron()));
+let scene = [];
+for (p, pi) in polys {
+  scene.push(p.translate((pi - polys.len / 2.) * 2.0, 0., 0.));
+}
+
+let i = make_obj(dodecahedron());
+
+Difference([i, i.smooth_exponential(15.).scale(1.06,1.06,1.06)]).smooth(0.06)
+
+
+
     </textarea>
     <button id="run" type="button">Run</button>    
     <textarea id="output" rows="20" cols="33" readonly="true"></textarea>    
