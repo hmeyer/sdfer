@@ -25,10 +25,42 @@ fn roll(v, i) {
   throw "invalid roll";
 }
 
+fn max(a, b) {
+  if a < b {
+    return b;
+  } else {
+    return a;
+  }
+}
+
+fn normalize(vertices) {
+  let max_norm = 0.;
+  for v in vertices {
+    max_norm = max(max_norm, v.norm());
+  }
+  let norm_fn = (|s, v| v * s).curry(1. / max_norm);
+  vertices.map(norm_fn)
+}
+
+fn add_face(faces, new_face) {
+  let face_exists = false;
+  for f in faces {
+    if (f - new_face).norm() < global::EPS {
+      face_exists = true;
+      break;
+    }
+  }
+  if !face_exists {
+    faces.push(new_face);
+  }
+  return faces;
+}
+
 // Input is an Array of Vertices.
 fn autoface(v) {
   // WARNING: ONLY WORKS IF ALL EDGES HAVE EQUAL LENGTH
-  let f = [];
+  v = normalize(v);
+  let faces = [];
   let edge_length = 1e10;
   for (a, ai) in v {
     for (b, bi) in v {
@@ -58,29 +90,40 @@ fn autoface(v) {
           n = -n;
           d = -d;
         }
-        let flag = true;
+        let f = true;
         for p in v {
           if n.dot(p) > (d + global::EPS) {
-            flag = false;
+            f = false;
             break;
           }
         }
-        if flag {
-          f.push([n, -d]);
+        if f {
+          faces = add_face(faces, n * d);
         }
       }
     }
   }
-  return f;
+  return faces;
+}
+
+fn dual(faces, vertices) {
+  let max_norm = 0.;
+  for f in faces {
+    max_norm = max(max_norm, f.norm());
+  }
+  faces = faces.map(|f| f / max_norm);
+  vertices = vertices.map(|v| v / max_norm);
+  return [vertices, faces];
 }
 
 // Input is an Array of Faces.
 fn make_obj(faces) {
   let planes = [];
   for f in faces {
-    planes.push(Plane(f[0], f[1]));
+    let d = f.norm();
+    planes.push(Plane(f / d, -d));
   }
-  return Intersection(planes).smooth_exponential(16.0);
+  return Intersection(planes);
 }
 
 fn addpointsevensgn(p) {
@@ -116,6 +159,32 @@ fn addevenpermssgn(a, s) {
   return v;
 }
 
+fn addevenperms(a) {
+  let v = [];
+  for s in 0..3 {
+    v.push(roll(a, s))
+  }
+  return v;
+}
+
+fn addevenpermsevensgn(a) {
+  let v = addevenperms(a);
+  v += addevenperms(a * Vector(-1., -1.,  1.));
+  v += addevenperms(a * Vector(-1.,  1., -1.));
+  v += addevenperms(a * Vector( 1., -1., -1.));
+  return v;
+}
+
+fn addpermssgn(a, s) {
+  let v = addevenpermssgn(a, s);
+  v + addevenpermssgn(Vector(a[0], a[2], a[1]), Vector(s[0], s[2], s[1]))
+}
+
+fn addpermsaltsgn(a) {
+  let v = addevenpermsevensgn(a);
+  v + addevenpermsevensgn(Vector(a[0], a[2], -a[1]))
+}
+
 // Platonic Solids
 
 fn tetrahedron() {
@@ -146,14 +215,120 @@ fn icosahedron() {
 
 // Archimedian Solids
 
+fn cuboctahedron() {
+  let v = addevenpermssgn(Vector(0., 1., 1.), Vector(0., 1., 1.));
+  return autoface(v);
+}
+
+fn icosidodecahedron() {
+  let v = addevenpermssgn(Vector(0., 0., 2. * global::PHI), Vector(0., 0., 1.));
+  v += addevenpermssgn(Vector(1., global::PHI, 1. + global::PHI), Vector(1., 1., 1.));
+  return autoface(v);
+}
+
+fn truncatedtetrahedron() {
+  let v = addevenpermsevensgn(Vector(1., 1., 3.));
+  return autoface(v);
+}
+
+fn truncatedhexahedron() {
+  let v = addevenpermssgn(Vector(sqrt(2.) - 1., 1., 1.), Vector(1., 1., 1.));
+  return autoface(v);
+}
+
+fn truncatedoctahedron() {
+  let v = addpermssgn(Vector(0., 1., 2.), Vector(0., 1., 1.));
+  return autoface(v);
+}
+
+fn truncateddodecahedron() {
+  let v = addevenpermssgn(Vector(0., 1. / global::PHI, 2. + global::PHI), Vector(0., 1., 1.));
+  v += addevenpermssgn(Vector(1. / global::PHI, global::PHI, 2. * global::PHI), Vector(1., 1., 1.));
+  v += addevenpermssgn(Vector(global::PHI, 2., 1. + global::PHI), Vector(1., 1., 1.));
+  return autoface(v);
+}
+
+fn truncatedicosahedron() {
+  let v = addevenpermssgn(Vector(0., 1., 3. * global::PHI), Vector(0., 1., 1.));
+  v += addevenpermssgn(Vector(2., 1 + 2 * global::PHI, global::PHI), Vector(1., 1., 1.));
+  v += addevenpermssgn(Vector(1., 2. + global::PHI, 2. * global::PHI), Vector(1., 1., 1.));
+  return autoface(v);
+}
+
+fn rhombicuboctahedron() {
+  let v = addevenpermssgn(Vector(1. + sqrt(2.), 1., 1.), Vector(1., 1., 1.));
+  return autoface(v);
+}
+
+fn truncatedcuboctahedron() {
+  let v = addpermssgn(Vector(1., 1. + sqrt(2.), 1. + sqrt(2.) * 2), Vector(1., 1., 1.));
+  return autoface(v);
+}
+
+fn rhombicosidodecahedron() {
+  let v = addevenpermssgn(Vector(1., 1., 1. + 2. * global::PHI), Vector(1., 1., 1.));
+  v += addevenpermssgn(Vector(global::PHI, 2. * global::PHI, 1. + global::PHI), Vector(1., 1., 1.));
+  v += addevenpermssgn(Vector(2. + global::PHI, 0., 1. + global::PHI), Vector(1., 0., 1.));
+  return autoface(v);
+}
+
+fn truncatedicosidodecahedron() {
+  let v = addevenpermssgn(Vector(1. / global::PHI, 1. / global::PHI, 3. + global::PHI), Vector(1., 1., 1.));
+  v += addevenpermssgn(Vector(2. / global::PHI, global::PHI, 1. + 2. * global::PHI), Vector(1., 1., 1.));
+  v += addevenpermssgn(Vector(1. / global::PHI, 1. + global::PHI, 3. * global::PHI - 1), Vector(1., 1., 1.));
+  v += addevenpermssgn(Vector(2. * global::PHI - 1., 2., 2. + global::PHI), Vector(1., 1., 1.));
+  v += addevenpermssgn(Vector(global::PHI, 3., 2. * global::PHI), Vector(1., 1., 1.));
+  return autoface(v);
+}
+
+fn pow(a, b) {
+  exp(b * ln(a))
+}
+
+fn snubhexahedron(s) {
+  let xi = (pow(sqrt(297.) + 17., 1./3.) - pow(sqrt(297.) - 17., 1./3.) - 1.) / 3.;
+  let v = addpermsaltsgn(Vector(1., 1. / xi, xi) * s);
+  return autoface(v);
+}
+
+fn snubdodecahedron(s) {
+  let sqweird = sqrt(global::PHI - 5. / 27.);
+  let ouch = pow((global::PHI + sqweird) / 2., 1. / 3.) + pow((global::PHI - sqweird) / 2., 1. / 3.);
+  let alpha = ouch - 1. / ouch;
+  let theta = (ouch + global::PHI + 1. / ouch) * global::PHI;
+
+  let v = addevenpermsevensgn(Vector(2. * alpha, 2., 2. * theta) * s);
+  v += addevenpermsevensgn(Vector(alpha + theta / global::PHI + global::PHI, -alpha * global::PHI + theta + 1. / global::PHI, alpha / global::PHI + theta * global::PHI - 1.) * s);
+  v += addevenpermsevensgn(Vector(-alpha / global::PHI + theta * global::PHI + 1., -alpha + theta / global::PHI - global::PHI, alpha * global::PHI + theta - 1. / global::PHI) * s);
+  v += addevenpermsevensgn(Vector(-alpha / global::PHI + theta * global::PHI - 1., alpha - theta / global::PHI - global::PHI, alpha * global::PHI + theta + 1 / global::PHI) * s);
+  v += addevenpermsevensgn(Vector(alpha + theta / global::PHI - global::PHI, alpha * global::PHI - theta + 1. / global::PHI, alpha / global::PHI + theta * global::PHI + 1.) * s); 
+
+  return autoface(v);
+}
 
 // Platonic Solids
 //make_obj(tetrahedron())
 //make_obj(hexahedron())
 //make_obj(octahedron())
 //make_obj(dodecahedron())
-make_obj(icosahedron())
+//make_obj(icosahedron())
 
+// Archimedian Solids
+//make_obj(cuboctahedron())
+//make_obj(icosidodecahedron())
+//make_obj(truncatedtetrahedron())
+//make_obj(truncatedhexahedron())
+//make_obj(truncatedoctahedron())
+//make_obj(truncateddodecahedron())
+//make_obj(truncatedicosahedron())
+//make_obj(rhombicuboctahedron())
+//make_obj(truncatedcuboctahedron())
+//make_obj(rhombicosidodecahedron())
+//make_obj(truncatedicosidodecahedron())
+//make_obj(snubhexahedron(-1.))
+//make_obj(snubhexahedron(1.))
+//make_obj(snubdodecahedron(-1.))
+make_obj(snubdodecahedron(1.))
 
 
     </textarea>
