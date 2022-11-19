@@ -122,3 +122,45 @@ float RoundedCylinder(vec3 p, float ra, float rb, float h) {
         )
     }
 }
+
+#[derive(Clone)]
+pub struct Capsule {
+    radius: f32,
+    begin: na::Vector3<f32>,
+    end: na::Vector3<f32>,
+}
+
+impl Capsule {
+    pub fn new(
+        radius: f32,
+        begin: na::Vector3<f32>,
+        end: na::Vector3<f32>,
+    ) -> Result<Box<dyn Primitive>> {
+        if radius <= 0. {
+            bail!("radius should be positive (was {}).", radius);
+        }
+        Ok(Box::new(Capsule { radius, begin, end }))
+    }
+}
+
+impl Primitive for Capsule {
+    fn static_code(&self) -> HashSet<String> {
+        HashSet::from([r#"
+float Capsule(vec3 p, vec3 a, vec3 b, float r) {
+    vec3 pa = p - a, ba = b - a;
+    float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0 );
+    return length(pa - ba * h) - r;
+}
+"#
+        .to_string()])
+    }
+    fn expression(&self, p: &str) -> String {
+        format!(
+            "Capsule({}, {}, {}, {:.8})",
+            p,
+            shader_vec3(&self.begin),
+            shader_vec3(&self.end),
+            self.radius
+        )
+    }
+}

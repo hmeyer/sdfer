@@ -100,26 +100,19 @@ impl RhaiScriptEngine {
                     Bend::new(prim, distance_for_full_circle) as Box<dyn Primitive>
                 },
             );
+        engine.register_fn(
+            "Plane",
+            |normal: na::Vector3<f32>, d: f32| -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
+                Plane::new(normal, d).map_err(|e| e.to_string().into())
+            },
+        );
+        engine.register_fn(
+            "Sphere",
+            |r: f32| -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
+                Sphere::new(r).map_err(|e| e.to_string().into())
+            },
+        );
         engine
-            .register_type_with_name::<Box<Sphere>>("Plane")
-            .register_fn(
-                "Plane",
-                |normal: na::Vector3<f32>,
-                 d: f32|
-                 -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
-                    Plane::new(normal, d).map_err(|e| e.to_string().into())
-                },
-            );
-        engine
-            .register_type_with_name::<Box<Sphere>>("Sphere")
-            .register_fn(
-                "Sphere",
-                |r: f32| -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
-                    Sphere::new(r).map_err(|e| e.to_string().into())
-                },
-            );
-        engine
-            .register_type_with_name::<Box<Sphere>>("Cylinder")
             .register_fn(
                 "Cylinder",
                 |r: f32| -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
@@ -135,18 +128,25 @@ impl RhaiScriptEngine {
                     Cylinder::new(r, begin, end).map_err(|e| e.to_string().into())
                 },
             );
-        engine
-            .register_type_with_name::<Box<Sphere>>("RoundedCylinder")
-            .register_fn(
-                "RoundedCylinder",
-                |main_radius: f32,
-                 rounding_radius: f32,
-                 height: f32|
-                 -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
-                    RoundedCylinder::new(main_radius, rounding_radius, height)
-                        .map_err(|e| e.to_string().into())
-                },
-            );
+        engine.register_fn(
+            "RoundedCylinder",
+            |main_radius: f32,
+             rounding_radius: f32,
+             height: f32|
+             -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
+                RoundedCylinder::new(main_radius, rounding_radius, height)
+                    .map_err(|e| e.to_string().into())
+            },
+        );
+        engine.register_fn(
+            "Capsule",
+            |r: f32,
+             begin: na::Vector3<f32>,
+             end: na::Vector3<f32>|
+             -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
+                Capsule::new(r, begin, end).map_err(|e| e.to_string().into())
+            },
+        );
 
         engine
             .register_type_with_name::<Box<Torus>>("Torus")
