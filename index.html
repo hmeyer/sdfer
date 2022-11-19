@@ -33,13 +33,13 @@ fn max(a, b) {
   }
 }
 
-fn normalize(vertices) {
+fn normalize(poly) {
   let max_norm = 0.;
-  for v in vertices {
+  for v in poly.vertices {
     max_norm = max(max_norm, v.norm());
   }
   let norm_fn = (|s, v| v * s).curry(1. / max_norm);
-  vertices.map(norm_fn)
+  return #{faces: poly.faces.map(norm_fn), vertices: poly.vertices.map(norm_fn)};
 }
 
 fn add_face(faces, new_face) {
@@ -59,7 +59,7 @@ fn add_face(faces, new_face) {
 // Input is an Array of Vertices.
 fn autoface(v) {
   // WARNING: ONLY WORKS IF ALL EDGES HAVE EQUAL LENGTH
-  v = normalize(v);
+  v = normalize(#{vertices: v, faces: []}).vertices;
   let faces = [];
   let edge_length = 1e10;
   for (a, ai) in v {
@@ -103,23 +103,17 @@ fn autoface(v) {
       }
     }
   }
-  return faces;
+  return #{faces: faces, vertices: v};
 }
 
-fn dual(faces, vertices) {
-  let max_norm = 0.;
-  for f in faces {
-    max_norm = max(max_norm, f.norm());
-  }
-  faces = faces.map(|f| f / max_norm);
-  vertices = vertices.map(|v| v / max_norm);
-  return [vertices, faces];
+fn dual(poly) {
+  return normalize(#{vertices: poly.faces, faces: poly.vertices});
 }
 
 // Input is an Array of Faces.
-fn make_obj(faces) {
+fn make_obj(poly) {
   let planes = [];
-  for f in faces {
+  for f in poly.faces {
     let d = f.norm();
     planes.push(Plane(f / d, -d));
   }
@@ -306,6 +300,60 @@ fn snubdodecahedron(s) {
   return autoface(v);
 }
 
+// Catalan Solids
+
+fn rhombicdodecahedron() {
+  dual(cuboctahedron())
+}
+
+fn rhombictriacontahedron() {
+  dual(icosidodecahedron())
+}
+
+fn triakistetrahedron() {
+  dual(truncatedtetrahedron())
+}
+
+fn triakisoctahedron() {
+  dual(truncatedhexahedron())
+}
+
+fn tetrakishexahedron() {
+  dual(truncatedoctahedron())
+}
+
+fn triakisicosahedron() {
+  dual(truncateddodecahedron())
+}
+
+fn pentakisdodecahedron() {
+  dual(truncatedicosahedron())
+}
+
+fn deltoidalicositetrahedron() {
+  dual(rhombicuboctahedron())
+}
+
+fn disdyakisdodecahedron() {
+  dual(truncatedcuboctahedron())
+}
+
+fn deltoidalhexecontahedron() {
+  dual(rhombicosidodecahedron())
+}
+
+fn disdyakistriacontahedron() {
+  dual(truncatedicosidodecahedron())
+}
+
+fn pentagonalicositetrahedron(s) {
+  dual(snubhexahedron(s))
+}
+
+fn pentagonalhexecontahedron(s) {
+  dual(snubdodecahedron(s))
+}
+
 // Platonic Solids
 //make_obj(tetrahedron())
 //make_obj(hexahedron())
@@ -328,8 +376,24 @@ fn snubdodecahedron(s) {
 //make_obj(snubhexahedron(-1.))
 //make_obj(snubhexahedron(1.))
 //make_obj(snubdodecahedron(-1.))
-make_obj(snubdodecahedron(1.))
+//make_obj(snubdodecahedron(1.))
 
+// Catalan Solids
+//make_obj(rhombicdodecahedron())
+//make_obj(rhombictriacontahedron())
+//make_obj(triakistetrahedron())
+//make_obj(triakisoctahedron())
+//make_obj(tetrakishexahedron())
+//make_obj(triakisicosahedron())
+//make_obj(pentakisdodecahedron())
+//make_obj(deltoidalicositetrahedron())
+//make_obj(disdyakisdodecahedron())
+//make_obj(deltoidalhexecontahedron())
+//make_obj(disdyakistriacontahedron())
+//make_obj(pentagonalicositetrahedron(-1.))
+//make_obj(pentagonalicositetrahedron(1.))
+//make_obj(pentagonalhexecontahedron(-1.))
+make_obj(pentagonalhexecontahedron(1.))
 
     </textarea>
     <button id="run" type="button">Run</button>    
