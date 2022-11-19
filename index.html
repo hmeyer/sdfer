@@ -25,11 +25,13 @@ fn roll(v, i) {
   throw "invalid roll";
 }
 
-fn autoface(polyeder) {
+// Input is an Array of Vertices.
+fn autoface(v) {
   // WARNING: ONLY WORKS IF ALL EDGES HAVE EQUAL LENGTH
+  let f = [];
   let edge_length = 1e10;
-  for (a, ai) in polyeder[1] {
-    for (b, bi) in polyeder[1] {
+  for (a, ai) in v {
+    for (b, bi) in v {
       if ai == bi {
         continue;
       }
@@ -40,12 +42,12 @@ fn autoface(polyeder) {
     }
   }
 
-  for (a, ai) in polyeder[1] {
-    for (b, bi) in polyeder[1] {
+  for (a, ai) in v {
+    for (b, bi) in v {
       if bi <= ai || (a - b).norm() > (edge_length + global::EPS) {
         continue;
       }
-      for (c, ci) in polyeder[1] {
+      for (c, ci) in v {
         if ci <= bi || (a - c).norm() > (edge_length + global::EPS) {
           continue;
         }
@@ -56,108 +58,101 @@ fn autoface(polyeder) {
           n = -n;
           d = -d;
         }
-        let f = true;
-        for p in polyeder[1] {
+        let flag = true;
+        for p in v {
           if n.dot(p) > (d + global::EPS) {
-            f = false;
+            flag = false;
             break;
           }
         }
-        if f {
-          polyeder[0].push([n, -d]);
+        if flag {
+          f.push([n, -d]);
         }
       }
     }
   }
-  return polyeder;
+  return f;
 }
 
-
-fn make_obj(polyeder) {
+// Input is an Array of Faces.
+fn make_obj(faces) {
   let planes = [];
-  for f in polyeder[0] {
+  for f in faces {
     planes.push(Plane(f[0], f[1]));
   }
-  return Intersection(planes);
+  return Intersection(planes).smooth_exponential(16.0);
 }
 
-fn addpointsevensgn(polyeder, p) {
+fn addpointsevensgn(p) {
+  let v = [];
   for m in [Vector( 1.,  1., 1.),
             Vector(-1., -1., 1.),
             Vector(-1.,  1.,-1.),
             Vector( 1., -1.,-1.)] {
-  polyeder[1].push(m * p);
-}
-  return polyeder;
+    v.push(m * p);
+  }
+  return v;
 }
 
-fn addpointssgn(polyeder, a, s) {
-  polyeder[1].push(a);
+fn addpointssgn(a, s) {
+  let v = [a];
   if s[0] != 0. {
-    polyeder = addpointssgn(polyeder, a * Vector(-1.,1.,1.), s * Vector(0.,1.,1.));
+    v += addpointssgn(a * Vector(-1.,1.,1.), s * Vector(0.,1.,1.));
   }
   if s[1] != 0. {
-    polyeder = addpointssgn(polyeder, a * Vector(1.,-1.,1.), s * Vector(0.,0.,1.));
+    v += addpointssgn(a * Vector(1.,-1.,1.), s * Vector(0.,0.,1.));
   }
   if s[2] != 0. {
-    polyeder[1].push(a * Vector(1.,1.,-1.));
+    v.push(a * Vector(1.,1.,-1.));
   }
-  return polyeder;
+  return v;
 }
 
-fn addevenpermssgn(polyeder, a, s) {
+fn addevenpermssgn(a, s) {
+  let v = [];
   for r in 0..3 {
-    polyeder = addpointssgn(polyeder, roll(a, r), roll(s, r));
+    v += addpointssgn(roll(a, r), roll(s, r));
   }
-  return polyeder;
+  return v;
 }
+
+// Platonic Solids
 
 fn tetrahedron() {
-  let polyeder = [[], []];
-  polyeder = addpointsevensgn(polyeder, Vector(1., 1., 1.));
-  return autoface(polyeder);
-  return make_obj(polyeder);
+  let v = addpointsevensgn(Vector(1., 1., 1.));
+  return autoface(v);
 }
 
 fn hexahedron() {
-  let polyeder = [[], []];
-  polyeder = addpointssgn(polyeder, Vector(1., 1., 1.), Vector(1., 1., 1.));
-  return autoface(polyeder);
+  let v = addpointssgn(Vector(1., 1., 1.), Vector(1., 1., 1.));
+  return autoface(v);
 }
 
 fn octahedron() {
-  let polyeder = [[], []];
-  polyeder = addevenpermssgn(polyeder, Vector(1.,0.,0.), Vector(1.,0.,0.));
-  return autoface(polyeder);
+  let v = addevenpermssgn(Vector(1.,0.,0.), Vector(1.,0.,0.));
+  return autoface(v);
 }
 
 fn dodecahedron() {
-  let polyeder = [[], []];
-  polyeder = addpointssgn(polyeder, Vector(1.,1.,1.), Vector(1.,1.,1.));
-  polyeder = addevenpermssgn(polyeder, Vector(0., 1. / global::PHI, global::PHI) , Vector(0.,1.,1.));
-  return autoface(polyeder);
+  let v = addpointssgn(Vector(1.,1.,1.), Vector(1.,1.,1.));
+  v += addevenpermssgn(Vector(0., 1. / global::PHI, global::PHI) , Vector(0.,1.,1.));
+  return autoface(v);
 }
 
 fn icosahedron() {
-  let polyeder = [[], []];
-  polyeder = addevenpermssgn(polyeder, Vector(0., 1., global::PHI) , Vector(0.,1.,1.));
-  return autoface(polyeder);
+  let v = addevenpermssgn(Vector(0., 1., global::PHI) , Vector(0.,1.,1.));
+  return autoface(v);
 }
 
-let polys = [];
-polys.push(make_obj(tetrahedron()));
-polys.push(make_obj(hexahedron()));
-polys.push(make_obj(octahedron()));
-polys.push(make_obj(dodecahedron()));
-polys.push(make_obj(icosahedron()));
-let scene = [];
-for (p, pi) in polys {
-  scene.push(p.translate((pi - polys.len / 2.) * 2.0, 0., 0.));
-}
+// Archimedian Solids
 
-let i = make_obj(dodecahedron());
 
-Difference([i, i.smooth_exponential(15.).scale(1.06,1.06,1.06)]).smooth(0.06)
+// Platonic Solids
+//make_obj(tetrahedron())
+//make_obj(hexahedron())
+//make_obj(octahedron())
+//make_obj(dodecahedron())
+make_obj(icosahedron())
 
 
 
