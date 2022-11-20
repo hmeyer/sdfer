@@ -77,6 +77,12 @@ impl RhaiScriptEngine {
                 },
             )
             .register_fn(
+                "scale",
+                |prim: Box<dyn Primitive>, s: f32| {
+                    prim.scale(na::Vector3::new(s, s, s))
+                },
+            )
+            .register_fn(
                 "repeat",
                 |prim: Box<dyn Primitive>,
                  bound: na::Vector3<f32>,
@@ -288,6 +294,12 @@ impl RhaiScriptEngine {
                 "scale",
                 |prim: &mut Box<Boolean>, x: f32, y: f32, z: f32| {
                     prim.scale(na::Vector3::new(x, y, z))
+                },
+            )
+            .register_fn(
+                "scale",
+                |prim: &mut Box<Boolean>, s: f32| {
+                    prim.scale(na::Vector3::new(s, s, s))
                 },
             )
             .register_fn(
