@@ -38,20 +38,22 @@ fn normalize(poly) {
   for v in poly.vertices {
     max_norm = max(max_norm, v.norm());
   }
-  let norm_fn = (|s, v| v * s).curry(1. / max_norm);
-  return #{faces: poly.faces.map(norm_fn), vertices: poly.vertices.map(norm_fn)};
+  let norm_v = (|s, v| v * s).curry(1. / max_norm);
+  let norm_f = (|s, v| v * s).curry(1. * max_norm);
+  return #{faces: poly.faces.map(norm_f), vertices: poly.vertices.map(norm_v)};
 }
 
-fn add_face(faces, new_face) {
+fn add_face(faces, d, l) {
+  let a = d / (d.norm() * l);
   let face_exists = false;
   for f in faces {
-    if (f - new_face).norm() < global::EPS {
+    if (f - a).norm() < global::EPS {
       face_exists = true;
       break;
     }
   }
   if !face_exists {
-    faces.push(new_face);
+    faces.push(a);
   }
   return faces;
 }
@@ -59,7 +61,6 @@ fn add_face(faces, new_face) {
 // Input is an Array of Vertices.
 fn autoface(v) {
   // WARNING: ONLY WORKS IF ALL EDGES HAVE EQUAL LENGTH
-  v = normalize(#{vertices: v, faces: []}).vertices;
   let faces = [];
   let edge_length = 1e10;
   for (a, ai) in v {
@@ -98,24 +99,75 @@ fn autoface(v) {
           }
         }
         if f {
-          faces = add_face(faces, n * d);
+          faces = add_face(faces, n, d);
         }
       }
     }
   }
+  print("autoface: ");
+  print(v.len);
+  print(faces.len);
   return #{faces: faces, vertices: v};
 }
 
 fn dual(poly) {
-  return normalize(#{vertices: poly.faces, faces: poly.vertices});
+  return #{vertices: poly.faces, faces: poly.vertices};
 }
 
-// Input is an Array of Faces.
 fn make_obj(poly) {
+  make_obj(poly, 0.10)
+}
+
+fn make_obj(poly, r) {
+  poly = normalize(poly);
+  Union(
+//    make_vertices(poly, r)
+    make_edges(poly, r)
+//    + [make_solid(poly)]
+  )
+}
+
+fn make_vertices(poly, radius) {
+  let vertices = [];
+  for v in poly.vertices {
+    vertices.push(Sphere(radius).translate(v[0], v[1], v[2]));
+  }
+  vertices
+}
+
+fn make_edges(poly, radius) {
+  let lines = [];
+  for face in poly.faces {
+    let p = [];
+    for (b, bi) in poly.vertices {
+      if face.dot(b) > (1. - global::EPS) {
+        p.push(bi);
+      }
+    }
+    for (c, ci) in p {
+      let p_copy = p;
+      for d in p_copy.split(ci + 1) {
+        let f = true;
+        for e in p {
+          if e != c && e != d && poly.vertices[c].cross(poly.vertices[d]).dot(poly.vertices[e]) < 0. {
+            f = false;
+            break;
+          }
+        }
+        if f {
+          lines.push(Capsule(radius, poly.vertices[c], poly.vertices[d]));
+        }
+      }
+    }
+  }
+  lines
+}
+
+fn make_solid(poly) {
   let planes = [];
   for f in poly.faces {
     let d = f.norm();
-    planes.push(Plane(f / d, -d));
+    planes.push(Plane(f / d, -1./d));
   }
   return Intersection(planes);
 }
