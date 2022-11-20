@@ -75,23 +75,18 @@ impl BooleanKind {
 }
 
 fn make_default_min_function(function_name: &str, params: &[String]) -> Result<String> {
-    let expr_begin = params[0..params.len() - 1]
-        .iter()
-        .map(|p| format!("min({}", p))
-        .collect::<Vec<_>>()
-        .join(", ");
-    let expr_end = String::from_utf8(vec![b')'; params.len() - 1]).unwrap();
+    let min_exps = params[1..].iter().map(|a| format!("{} = min({}, {});", params[0], params[0], a)).collect::<Vec<_>>().join("\n    ");
     Ok(format!(
         "
 float {}(float {}) {{
-return {expr_begin}, {last_param}{expr_end};
+    {}
+    return {};
 }}
 ",
         function_name,
         params.join(", float "),
-        expr_begin = expr_begin,
-        last_param = params[params.len() - 1],
-        expr_end = expr_end
+        min_exps,
+        params[0]
     ))
 }
 
