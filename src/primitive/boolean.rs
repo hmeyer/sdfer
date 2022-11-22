@@ -75,7 +75,11 @@ impl BooleanKind {
 }
 
 fn make_default_min_function(function_name: &str, params: &[String]) -> Result<String> {
-    let min_exps = params[1..].iter().map(|a| format!("{} = min({}, {});", params[0], params[0], a)).collect::<Vec<_>>().join("\n    ");
+    let min_exps = params[1..]
+        .iter()
+        .map(|a| format!("{} = min({}, {});", params[0], params[0], a))
+        .collect::<Vec<_>>()
+        .join("\n    ");
     Ok(format!(
         "
 float {}(float {}) {{
@@ -258,17 +262,10 @@ impl Boolean {
 }
 
 impl Primitive for Boolean {
-    fn static_code(&self) -> HashSet<String> {
-        let mut code_set = HashSet::new();
-        for child in &self.children {
-            code_set.extend(child.static_code());
-        }
-        code_set.insert(self.kind.make_function(self.children.len()).unwrap());
-        code_set
-    }
-    fn expression(&self, p: &str) -> String {
+    fn expression(&self, p: &str, shared_code: &mut HashSet<String>) -> String {
+        shared_code.insert(self.kind.make_function(self.children.len()).unwrap());
         let child_exps = (self.children.iter())
-            .map(|c| c.expression(p))
+            .map(|c| c.expression(p, shared_code))
             .collect::<Vec<_>>()
             .join(", ");
         return format!(
@@ -287,10 +284,7 @@ struct Negation {
 }
 
 impl Primitive for Negation {
-    fn static_code(&self) -> HashSet<String> {
-        self.child.static_code()
-    }
-    fn expression(&self, p: &str) -> String {
-        format!("-({})", self.child.expression(p))
+    fn expression(&self, p: &str, shared_code: &mut HashSet<String>) -> String {
+        format!("-({})", self.child.expression(p, shared_code))
     }
 }

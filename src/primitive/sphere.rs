@@ -17,10 +17,7 @@ impl Sphere {
 }
 
 impl Primitive for Sphere {
-    fn static_code(&self) -> HashSet<String> {
-        HashSet::new()
-    }
-    fn expression(&self, p: &str) -> String {
+    fn expression(&self, p: &str, _shared_code: &mut HashSet<String>) -> String {
         format!("length({}) - {:.8}", p, self.radius)
     }
 }

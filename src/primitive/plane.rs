@@ -18,10 +18,7 @@ impl Plane {
 }
 
 impl Primitive for Plane {
-    fn static_code(&self) -> HashSet<String> {
-        HashSet::new()
-    }
-    fn expression(&self, p: &str) -> String {
+    fn expression(&self, p: &str, _shared_code: &mut HashSet<String>) -> String {
         format!("dot({}, {}) + {:.8}", p, shader_vec3(&self.normal), self.d)
     }
 }

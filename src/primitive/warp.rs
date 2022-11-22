@@ -18,9 +18,8 @@ impl Twist {
 }
 
 impl Primitive for Twist {
-    fn static_code(&self) -> HashSet<String> {
-        let mut code_set = self.primitive.static_code();
-        code_set.insert(
+    fn expression(&self, p: &str, shared_code: &mut HashSet<String>) -> String {
+        shared_code.insert(
             r#"
 vec3 TwistXY(vec3 p, float rad_per_h) {
     float a = p.z * rad_per_h;
@@ -32,14 +31,10 @@ vec3 TwistXY(vec3 p, float rad_per_h) {
 "#
             .to_string(),
         );
-        code_set
-    }
-    fn expression(&self, p: &str) -> String {
-        self.primitive.expression(&format!(
-            "TwistXY({}, {:.8})",
-            p,
-            2. * PI / self.height_per_rotation
-        ))
+        self.primitive.expression(
+            &format!("TwistXY({}, {:.8})", p, 2. * PI / self.height_per_rotation),
+            shared_code,
+        )
     }
 }
 
@@ -59,9 +54,8 @@ impl Bend {
 }
 
 impl Primitive for Bend {
-    fn static_code(&self) -> HashSet<String> {
-        let mut code_set = self.primitive.static_code();
-        code_set.insert(
+    fn expression(&self, p: &str, shared_code: &mut HashSet<String>) -> String {
+        shared_code.insert(
             r#"
 vec3 BendAroundZ(vec3 p, float y_scale) {
     float a = atan(p.x, p.y);
@@ -71,13 +65,13 @@ vec3 BendAroundZ(vec3 p, float y_scale) {
 "#
             .to_string(),
         );
-        code_set
-    }
-    fn expression(&self, p: &str) -> String {
-        self.primitive.expression(&format!(
-            "BendAroundZ({}, {:.8})",
-            p,
-            self.distance_for_full_circle * 0.5 / PI
-        ))
+        self.primitive.expression(
+            &format!(
+                "BendAroundZ({}, {:.8})",
+                p,
+                self.distance_for_full_circle * 0.5 / PI
+            ),
+            shared_code,
+        )
     }
 }

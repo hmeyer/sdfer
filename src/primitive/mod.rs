@@ -1,8 +1,7 @@
 use std::collections::HashSet;
 
 pub trait Primitive: PrimitiveClone {
-    fn expression(&self, p: &str) -> String;
-    fn static_code(&self) -> HashSet<String>;
+    fn expression(&self, p: &str, shared_code: &mut HashSet<String>) -> String;
     fn translate(&self, vector: na::Vector3<f32>) -> Box<dyn Primitive> {
         Translate::new(self.clone_box(), vector)
     }

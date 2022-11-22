@@ -14,12 +14,11 @@ impl Translate {
 }
 
 impl Primitive for Translate {
-    fn static_code(&self) -> HashSet<String> {
-        self.primitive.static_code()
-    }
-    fn expression(&self, p: &str) -> String {
-        self.primitive
-            .expression(&format!("({}) - {}", p, shader_vec3(&self.vector)))
+    fn expression(&self, p: &str, shared_code: &mut HashSet<String>) -> String {
+        self.primitive.expression(
+            &format!("({}) - {}", p, shader_vec3(&self.vector)),
+            shared_code,
+        )
     }
 }
 
@@ -41,12 +40,11 @@ impl Rotate {
 }
 
 impl Primitive for Rotate {
-    fn static_code(&self) -> HashSet<String> {
-        self.primitive.static_code()
-    }
-    fn expression(&self, p: &str) -> String {
-        self.primitive
-            .expression(&format!("{} * ({})", shader_mat3(&self.matrix), p))
+    fn expression(&self, p: &str, shared_code: &mut HashSet<String>) -> String {
+        self.primitive.expression(
+            &format!("{} * ({})", shader_mat3(&self.matrix), p),
+            shared_code,
+        )
     }
 }
 
@@ -63,15 +61,15 @@ impl Scale {
 }
 
 impl Primitive for Scale {
-    fn static_code(&self) -> HashSet<String> {
-        self.primitive.static_code()
-    }
-    fn expression(&self, p: &str) -> String {
-        let d = self.primitive.expression(&format!(
-            "({}) * {}",
-            p,
-            shader_vec3(&(na::Vector3::new(1., 1., 1.).component_div(&self.scale)))
-        ));
+    fn expression(&self, p: &str, shared_code: &mut HashSet<String>) -> String {
+        let d = self.primitive.expression(
+            &format!(
+                "({}) * {}",
+                p,
+                shader_vec3(&(na::Vector3::new(1., 1., 1.).component_div(&self.scale)))
+            ),
+            shared_code,
+        );
         format!("({}) * {:.8}", d, self.scale.abs().min())
     }
 }

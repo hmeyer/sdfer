@@ -37,16 +37,16 @@ impl Repeat {
 }
 
 impl Primitive for Repeat {
-    fn static_code(&self) -> HashSet<String> {
-        self.primitive.static_code()
-    }
-    fn expression(&self, p: &str) -> String {
-        self.primitive.expression(&format!(
-            "{p} - {bounds} * clamp(round({p} / {bounds}), {rep_min}, {rep_max})",
-            p = p,
-            bounds = shader_vec3(&self.bounds),
-            rep_min = shader_vec3(&(self.repeats_min)),
-            rep_max = shader_vec3(&(self.repeats_max))
-        ))
+    fn expression(&self, p: &str, shared_code: &mut HashSet<String>) -> String {
+        self.primitive.expression(
+            &format!(
+                "{p} - {bounds} * clamp(round({p} / {bounds}), {rep_min}, {rep_max})",
+                p = p,
+                bounds = shader_vec3(&self.bounds),
+                rep_min = shader_vec3(&(self.repeats_min)),
+                rep_max = shader_vec3(&(self.repeats_max))
+            ),
+            shared_code,
+        )
     }
 }

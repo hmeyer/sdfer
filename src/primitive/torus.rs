@@ -40,44 +40,44 @@ impl Torus {
 }
 
 impl Primitive for Torus {
-    fn static_code(&self) -> HashSet<String> {
-        HashSet::from([match self.cap_angle {
+    fn expression(&self, p: &str, shared_code: &mut HashSet<String>) -> String {
+        match self.cap_angle {
             None => {
-                r#"
+                shared_code.insert(
+                    r#"
 float Torus(vec3 p, vec2 t) {
     vec2 q = vec2(length(p.xy) - t.x, p.z);
     return length(q) - t.y;
-}
-"#
+}"#
+                    .to_string(),
+                );
+                format!(
+                    "Torus({}, vec2({:.8}, {:.8}))",
+                    p,
+                    (self.inner + self.outer) / 2.0,
+                    (self.outer - self.inner) / 2.0
+                )
             }
-            Some(_) => {
-                r#"
+            Some(a) => {
+                shared_code.insert(
+                    r#"
 float CappedTorus(vec3 p, float ra, float rb, vec2 an) {
     p.x = abs(p.x);
     float k = (an.y * p.x > an.x * p.y) ? dot(p.xy, an) : length(p.xy);
     return sqrt( dot(p, p) + ra * ra - 2.0 * ra * k) - rb;
 }
 "#
+                    .to_string(),
+                );
+                format!(
+                    "CappedTorus({}, {:.8}, {:.8}, vec2({:.8}, {:.8}))",
+                    p,
+                    (self.inner + self.outer) / 2.0,
+                    (self.outer - self.inner) / 2.0,
+                    a.sin(),
+                    a.cos()
+                )
             }
-        }
-        .to_string()])
-    }
-    fn expression(&self, p: &str) -> String {
-        match self.cap_angle {
-            None => format!(
-                "Torus({}, vec2({:.8}, {:.8}))",
-                p,
-                (self.inner + self.outer) / 2.0,
-                (self.outer - self.inner) / 2.0
-            ),
-            Some(a) => format!(
-                "CappedTorus({}, {:.8}, {:.8}, vec2({:.8}, {:.8}))",
-                p,
-                (self.inner + self.outer) / 2.0,
-                (self.outer - self.inner) / 2.0,
-                a.sin(),
-                a.cos()
-            ),
         }
     }
 }

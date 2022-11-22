@@ -40,9 +40,10 @@ impl Cylinder {
 }
 
 impl Primitive for Cylinder {
-    fn static_code(&self) -> HashSet<String> {
+    fn expression(&self, p: &str, shared_code: &mut HashSet<String>) -> String {
         if self.bounds.is_some() {
-            HashSet::from([r#"
+            shared_code.insert(
+                r#"
 float CappedCylinder(vec3 p, vec3 a, vec3 b, float r) {
     vec3  ba = b - a;
     vec3  pa = p - a;
@@ -56,12 +57,9 @@ float CappedCylinder(vec3 p, vec3 a, vec3 b, float r) {
     return sign(d)*sqrt(abs(d))/baba;
 }
 "#
-            .to_string()])
-        } else {
-            HashSet::new()
+                .to_string(),
+            );
         }
-    }
-    fn expression(&self, p: &str) -> String {
         if let Some(ref bounds) = self.bounds {
             format!(
                 "CappedCylinder({p}, {a}, {b}, {r:.8})",
@@ -106,16 +104,16 @@ impl RoundedCylinder {
 }
 
 impl Primitive for RoundedCylinder {
-    fn static_code(&self) -> HashSet<String> {
-        HashSet::from([r#"
+    fn expression(&self, p: &str, shared_code: &mut HashSet<String>) -> String {
+        shared_code.insert(
+            r#"
 float RoundedCylinder(vec3 p, float ra, float rb, float h) {
     vec2 d = vec2(length(p.xy) - 2.0 * ra + rb, abs(p.z) - h);
     return min(max(d.x, d.y), 0.0) + length(max(d, 0.0)) - rb;
 }
 "#
-        .to_string()])
-    }
-    fn expression(&self, p: &str) -> String {
+            .to_string(),
+        );
         format!(
             "RoundedCylinder({}, {:.8}, {:.8}, {:.8})",
             p, self.main_radius, self.rounding_radius, self.height
@@ -144,17 +142,17 @@ impl Capsule {
 }
 
 impl Primitive for Capsule {
-    fn static_code(&self) -> HashSet<String> {
-        HashSet::from([r#"
+    fn expression(&self, p: &str, shared_code: &mut HashSet<String>) -> String {
+        shared_code.insert(
+            r#"
 float Capsule(vec3 p, vec3 a, vec3 b, float r) {
     vec3 pa = p - a, ba = b - a;
     float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0 );
     return length(pa - ba * h) - r;
 }
 "#
-        .to_string()])
-    }
-    fn expression(&self, p: &str) -> String {
+            .to_string(),
+        );
         format!(
             "Capsule({}, {}, {}, {:.8})",
             p,
