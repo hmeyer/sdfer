@@ -1,6 +1,5 @@
 use super::Primitive;
 use anyhow::{bail, Result};
-use std::collections::HashSet;
 
 #[derive(Clone)]
 pub struct Sphere {
@@ -17,7 +16,7 @@ impl Sphere {
 }
 
 impl Primitive for Sphere {
-    fn expression(&self, p: &str, _shared_code: &mut HashSet<String>) -> String {
+    fn expression(&self, p: &str, _shared_code: &mut Vec<String>) -> String {
         format!("length({}) - {:.8}", p, self.radius)
     }
 }

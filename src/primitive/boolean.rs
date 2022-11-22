@@ -1,6 +1,5 @@
 use super::Primitive;
 use anyhow::{bail, Result};
-use std::collections::HashSet;
 
 #[derive(Clone)]
 pub enum BooleanKind {
@@ -75,22 +74,31 @@ impl BooleanKind {
     fn expression(
         &self,
         p: &str,
-        shared_code: &mut HashSet<String>,
+        shared_code: &mut Vec<String>,
         negate: bool,
         children: &[Box<dyn Primitive>],
     ) -> String {
-        shared_code.insert(self.make_function(children.len()).unwrap());
+        let local_p = "p";
+        shared_code.push(self.make_function(children.len()).unwrap());
         let child_exps = (children.iter())
-            .map(|c| c.expression(p, shared_code))
+            .map(|c| c.expression(local_p, shared_code))
             .collect::<Vec<_>>()
             .join(", ");
-        return format!(
+        let boolean_exp = format!(
             "{negate}{fn_name}({child_exps}{extra})",
             negate = if negate { "-" } else { "" },
             fn_name = self.function_name(children.len()),
             child_exps = child_exps,
             extra = self.make_extra_params()
         );
+        let boolean_name = format!("Boolean{}", shared_code.len());
+        shared_code.push(format!(
+            "float {}(vec3 {}) {{
+return {};
+}}",
+            boolean_name, local_p, boolean_exp
+        ));
+        format!("{}({})", boolean_name, p)
     }
 }
 
@@ -282,7 +290,7 @@ impl Boolean {
 }
 
 impl Primitive for Boolean {
-    fn expression(&self, p: &str, shared_code: &mut HashSet<String>) -> String {
+    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String {
         self.kind
             .expression(p, shared_code, self.negate, &self.children)
     }
@@ -294,7 +302,7 @@ struct Negation {
 }
 
 impl Primitive for Negation {
-    fn expression(&self, p: &str, shared_code: &mut HashSet<String>) -> String {
+    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String {
         format!("-({})", self.child.expression(p, shared_code))
     }
 }

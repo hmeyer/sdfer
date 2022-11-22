@@ -1,5 +1,4 @@
 use super::{shader_mat3, shader_vec3, Primitive};
-use std::collections::HashSet;
 
 #[derive(Clone)]
 pub struct Translate {
@@ -14,7 +13,7 @@ impl Translate {
 }
 
 impl Primitive for Translate {
-    fn expression(&self, p: &str, shared_code: &mut HashSet<String>) -> String {
+    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String {
         self.primitive.expression(
             &format!("({}) - {}", p, shader_vec3(&self.vector)),
             shared_code,
@@ -40,7 +39,7 @@ impl Rotate {
 }
 
 impl Primitive for Rotate {
-    fn expression(&self, p: &str, shared_code: &mut HashSet<String>) -> String {
+    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String {
         self.primitive.expression(
             &format!("{} * ({})", shader_mat3(&self.matrix), p),
             shared_code,
@@ -61,7 +60,7 @@ impl Scale {
 }
 
 impl Primitive for Scale {
-    fn expression(&self, p: &str, shared_code: &mut HashSet<String>) -> String {
+    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String {
         let d = self.primitive.expression(
             &format!(
                 "({}) * {}",

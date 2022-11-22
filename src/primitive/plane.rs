@@ -1,6 +1,5 @@
 use super::{shader_vec3, Primitive};
 use anyhow::{bail, Result};
-use std::collections::HashSet;
 
 #[derive(Clone)]
 pub struct Plane {
@@ -18,7 +17,7 @@ impl Plane {
 }
 
 impl Primitive for Plane {
-    fn expression(&self, p: &str, _shared_code: &mut HashSet<String>) -> String {
+    fn expression(&self, p: &str, _shared_code: &mut Vec<String>) -> String {
         format!("dot({}, {}) + {:.8}", p, shader_vec3(&self.normal), self.d)
     }
 }

@@ -1,6 +1,5 @@
 use super::Primitive;
 use anyhow::{bail, Result};
-use std::collections::HashSet;
 use std::f32::consts::PI;
 
 #[derive(Clone)]
@@ -40,10 +39,10 @@ impl Torus {
 }
 
 impl Primitive for Torus {
-    fn expression(&self, p: &str, shared_code: &mut HashSet<String>) -> String {
+    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String {
         match self.cap_angle {
             None => {
-                shared_code.insert(
+                shared_code.push(
                     r#"
 float Torus(vec3 p, vec2 t) {
     vec2 q = vec2(length(p.xy) - t.x, p.z);
@@ -59,7 +58,7 @@ float Torus(vec3 p, vec2 t) {
                 )
             }
             Some(a) => {
-                shared_code.insert(
+                shared_code.push(
                     r#"
 float CappedTorus(vec3 p, float ra, float rb, vec2 an) {
     p.x = abs(p.x);

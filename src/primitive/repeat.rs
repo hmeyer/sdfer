@@ -1,6 +1,5 @@
 use super::{shader_vec3, Primitive};
 use anyhow::{bail, Result};
-use std::collections::HashSet;
 
 #[derive(Clone)]
 pub struct Repeat {
@@ -37,7 +36,7 @@ impl Repeat {
 }
 
 impl Primitive for Repeat {
-    fn expression(&self, p: &str, shared_code: &mut HashSet<String>) -> String {
+    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String {
         self.primitive.expression(
             &format!(
                 "{p} - {bounds} * clamp(round({p} / {bounds}), {rep_min}, {rep_max})",

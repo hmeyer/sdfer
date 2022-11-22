@@ -1,6 +1,5 @@
 use super::{shader_vec3, Primitive};
 use anyhow::{bail, Result};
-use std::collections::HashSet;
 
 #[derive(Clone)]
 pub struct ExactBox {
@@ -17,8 +16,8 @@ impl ExactBox {
 }
 
 impl Primitive for ExactBox {
-    fn expression(&self, p: &str, shared_code: &mut HashSet<String>) -> String {
-        shared_code.insert(
+    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String {
+        shared_code.push(
             r#"
 float Box( vec3 p, vec3 b ) {
     vec3 q = abs(p) - b;
@@ -53,8 +52,8 @@ impl RoundBox {
 }
 
 impl Primitive for RoundBox {
-    fn expression(&self, p: &str, shared_code: &mut HashSet<String>) -> String {
-        shared_code.insert(
+    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String {
+        shared_code.push(
             r#"
 float RoundBox( vec3 p, vec3 b, float r ) {
     vec3 q = abs(p) - b;

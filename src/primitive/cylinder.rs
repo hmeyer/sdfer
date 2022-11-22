@@ -1,6 +1,5 @@
 use super::{shader_vec3, Primitive};
 use anyhow::{bail, Result};
-use std::collections::HashSet;
 
 #[derive(Clone)]
 struct CylinderBounds {
@@ -40,9 +39,9 @@ impl Cylinder {
 }
 
 impl Primitive for Cylinder {
-    fn expression(&self, p: &str, shared_code: &mut HashSet<String>) -> String {
+    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String {
         if self.bounds.is_some() {
-            shared_code.insert(
+            shared_code.push(
                 r#"
 float CappedCylinder(vec3 p, vec3 a, vec3 b, float r) {
     vec3  ba = b - a;
@@ -104,8 +103,8 @@ impl RoundedCylinder {
 }
 
 impl Primitive for RoundedCylinder {
-    fn expression(&self, p: &str, shared_code: &mut HashSet<String>) -> String {
-        shared_code.insert(
+    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String {
+        shared_code.push(
             r#"
 float RoundedCylinder(vec3 p, float ra, float rb, float h) {
     vec2 d = vec2(length(p.xy) - 2.0 * ra + rb, abs(p.z) - h);
@@ -142,8 +141,8 @@ impl Capsule {
 }
 
 impl Primitive for Capsule {
-    fn expression(&self, p: &str, shared_code: &mut HashSet<String>) -> String {
-        shared_code.insert(
+    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String {
+        shared_code.push(
             r#"
 float Capsule(vec3 p, vec3 a, vec3 b, float r) {
     vec3 pa = p - a, ba = b - a;
