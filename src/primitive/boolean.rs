@@ -72,6 +72,26 @@ impl BooleanKind {
             }
         }
     }
+    fn expression(
+        &self,
+        p: &str,
+        shared_code: &mut HashSet<String>,
+        negate: bool,
+        children: &[Box<dyn Primitive>],
+    ) -> String {
+        shared_code.insert(self.make_function(children.len()).unwrap());
+        let child_exps = (children.iter())
+            .map(|c| c.expression(p, shared_code))
+            .collect::<Vec<_>>()
+            .join(", ");
+        return format!(
+            "{negate}{fn_name}({child_exps}{extra})",
+            negate = if negate { "-" } else { "" },
+            fn_name = self.function_name(children.len()),
+            child_exps = child_exps,
+            extra = self.make_extra_params()
+        );
+    }
 }
 
 fn make_default_min_function(function_name: &str, params: &[String]) -> Result<String> {
@@ -263,18 +283,8 @@ impl Boolean {
 
 impl Primitive for Boolean {
     fn expression(&self, p: &str, shared_code: &mut HashSet<String>) -> String {
-        shared_code.insert(self.kind.make_function(self.children.len()).unwrap());
-        let child_exps = (self.children.iter())
-            .map(|c| c.expression(p, shared_code))
-            .collect::<Vec<_>>()
-            .join(", ");
-        return format!(
-            "{negate}{fn_name}({child_exps}{extra})",
-            negate = if self.negate { "-" } else { "" },
-            fn_name = self.kind.function_name(self.children.len()),
-            child_exps = child_exps,
-            extra = self.kind.make_extra_params()
-        );
+        self.kind
+            .expression(p, shared_code, self.negate, &self.children)
     }
 }
 
