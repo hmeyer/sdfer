@@ -1,6 +1,9 @@
 use super::Primitive;
 use anyhow::{bail, Result};
 
+mod sdf_min;
+use sdf_min::{MinDefault, SdfMin};
+
 #[derive(Clone)]
 pub enum BooleanKind {
     Default,
@@ -291,8 +294,20 @@ impl Boolean {
 
 impl Primitive for Boolean {
     fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String {
-        self.kind
-            .expression(p, shared_code, self.negate, &self.children)
+        let min_function = MinDefault {};
+        let local_p = "p";
+        let body = min_function.function_body(local_p, shared_code, &self.children);
+        let function_name = format!("Boolean{}", shared_code.len());
+        shared_code.push(format!(
+            "
+float {}(vec3 {}) {{
+    {}
+}}
+        ",
+            function_name, local_p, body
+        ));
+        let negate = if self.negate { "-" } else { "" };
+        format!("{}{}({})", negate, function_name, p)
     }
 }
 
