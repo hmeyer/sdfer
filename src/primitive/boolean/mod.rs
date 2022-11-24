@@ -1,8 +1,8 @@
 use super::Primitive;
 use anyhow::{bail, Result};
 
-mod sdf_min;
-use sdf_min::{MinDefault, MinFunction};
+mod min_function;
+use min_function::{MinDefault, MinFunction};
 
 #[derive(Clone)]
 pub enum BooleanKind {
