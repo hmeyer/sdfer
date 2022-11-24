@@ -2,7 +2,7 @@ use super::Primitive;
 use anyhow::{bail, Result};
 
 mod min_function;
-use min_function::{MinDefault, MinFunction};
+use min_function::{MinDefault, MinExponential, MinFunction};
 
 #[derive(Clone)]
 pub enum BooleanKind {
@@ -295,6 +295,7 @@ impl Boolean {
 impl Primitive for Boolean {
     fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> Result<String> {
         let min_function = MinDefault {};
+        let min_function = MinExponential::new(17.);
         let expression = min_function.expression(p, shared_code, &self.children)?;
         let negate = if self.negate { "-" } else { "" };
         Ok(format!("{}{}", negate, expression))
