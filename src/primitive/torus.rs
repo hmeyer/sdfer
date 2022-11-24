@@ -39,7 +39,7 @@ impl Torus {
 }
 
 impl Primitive for Torus {
-    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String {
+    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> Result<String> {
         match self.cap_angle {
             None => {
                 shared_code.push(
@@ -50,12 +50,12 @@ float Torus(vec3 p, vec2 t) {
 }"#
                     .to_string(),
                 );
-                format!(
+                Ok(format!(
                     "Torus({}, vec2({:.8}, {:.8}))",
                     p,
                     (self.inner + self.outer) / 2.0,
                     (self.outer - self.inner) / 2.0
-                )
+                ))
             }
             Some(a) => {
                 shared_code.push(
@@ -68,14 +68,14 @@ float CappedTorus(vec3 p, float ra, float rb, vec2 an) {
 "#
                     .to_string(),
                 );
-                format!(
+                Ok(format!(
                     "CappedTorus({}, {:.8}, {:.8}, vec2({:.8}, {:.8}))",
                     p,
                     (self.inner + self.outer) / 2.0,
                     (self.outer - self.inner) / 2.0,
                     a.sin(),
                     a.cos()
-                )
+                ))
             }
         }
     }

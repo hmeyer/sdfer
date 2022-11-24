@@ -16,7 +16,7 @@ impl Sphere {
 }
 
 impl Primitive for Sphere {
-    fn expression(&self, p: &str, _shared_code: &mut Vec<String>) -> String {
-        format!("length({}) - {:.8}", p, self.radius)
+    fn expression(&self, p: &str, _shared_code: &mut Vec<String>) -> Result<String> {
+        Ok(format!("length({}) - {:.8}", p, self.radius))
     }
 }

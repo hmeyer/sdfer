@@ -1,4 +1,5 @@
 use super::{shader_mat3, shader_vec3, Primitive};
+use anyhow::Result;
 
 #[derive(Clone)]
 pub struct Translate {
@@ -13,7 +14,7 @@ impl Translate {
 }
 
 impl Primitive for Translate {
-    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String {
+    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> Result<String> {
         self.primitive.expression(
             &format!("({}) - {}", p, shader_vec3(&self.vector)),
             shared_code,
@@ -39,7 +40,7 @@ impl Rotate {
 }
 
 impl Primitive for Rotate {
-    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String {
+    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> Result<String> {
         self.primitive.expression(
             &format!("{} * ({})", shader_mat3(&self.matrix), p),
             shared_code,
@@ -60,7 +61,7 @@ impl Scale {
 }
 
 impl Primitive for Scale {
-    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String {
+    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> Result<String> {
         let d = self.primitive.expression(
             &format!(
                 "({}) * {}",
@@ -68,7 +69,7 @@ impl Primitive for Scale {
                 shader_vec3(&(na::Vector3::new(1., 1., 1.).component_div(&self.scale)))
             ),
             shared_code,
-        );
-        format!("({}) * {:.8}", d, self.scale.abs().min())
+        )?;
+        Ok(format!("({}) * {:.8}", d, self.scale.abs().min()))
     }
 }

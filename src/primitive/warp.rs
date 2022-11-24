@@ -1,4 +1,5 @@
 use super::Primitive;
+use anyhow::Result;
 use std::f32::consts::PI;
 
 #[derive(Clone)]
@@ -17,7 +18,7 @@ impl Twist {
 }
 
 impl Primitive for Twist {
-    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String {
+    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> Result<String> {
         shared_code.push(
             r#"
 vec3 TwistXY(vec3 p, float rad_per_h) {
@@ -53,7 +54,7 @@ impl Bend {
 }
 
 impl Primitive for Bend {
-    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String {
+    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> Result<String> {
         shared_code.push(
             r#"
 vec3 BendAroundZ(vec3 p, float y_scale) {

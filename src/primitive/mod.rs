@@ -1,5 +1,7 @@
+use anyhow::Result;
+
 pub trait Primitive: PrimitiveClone {
-    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String;
+    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> Result<String>;
     fn translate(&self, vector: na::Vector3<f32>) -> Box<dyn Primitive> {
         Translate::new(self.clone_box(), vector)
     }

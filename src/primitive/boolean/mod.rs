@@ -80,12 +80,12 @@ impl BooleanKind {
         shared_code: &mut Vec<String>,
         negate: bool,
         children: &[Box<dyn Primitive>],
-    ) -> String {
+    ) -> Result<String> {
         let local_p = "p";
         shared_code.push(self.make_function(children.len()).unwrap());
         let child_exps = (children.iter())
             .map(|c| c.expression(local_p, shared_code))
-            .collect::<Vec<_>>()
+            .collect::<Result<Vec<_>>>()?
             .join(", ");
         let boolean_exp = format!(
             "{negate}{fn_name}({child_exps}{extra})",
@@ -101,7 +101,7 @@ return {};
 }}",
             boolean_name, local_p, boolean_exp
         ));
-        format!("{}({})", boolean_name, p)
+        Ok(format!("{}({})", boolean_name, p))
     }
 }
 
@@ -293,11 +293,11 @@ impl Boolean {
 }
 
 impl Primitive for Boolean {
-    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String {
+    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> Result<String> {
         let min_function = MinDefault {};
-        let expression = min_function.expression(p, shared_code, &self.children);
+        let expression = min_function.expression(p, shared_code, &self.children)?;
         let negate = if self.negate { "-" } else { "" };
-        format!("{}{}", negate, expression)
+        Ok(format!("{}{}", negate, expression))
     }
 }
 
@@ -307,7 +307,7 @@ struct Negation {
 }
 
 impl Primitive for Negation {
-    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String {
-        format!("-({})", self.child.expression(p, shared_code))
+    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> Result<String> {
+        Ok(format!("-({})", self.child.expression(p, shared_code)?))
     }
 }

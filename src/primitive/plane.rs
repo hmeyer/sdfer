@@ -17,7 +17,12 @@ impl Plane {
 }
 
 impl Primitive for Plane {
-    fn expression(&self, p: &str, _shared_code: &mut Vec<String>) -> String {
-        format!("dot({}, {}) + {:.8}", p, shader_vec3(&self.normal), self.d)
+    fn expression(&self, p: &str, _shared_code: &mut Vec<String>) -> Result<String> {
+        Ok(format!(
+            "dot({}, {}) + {:.8}",
+            p,
+            shader_vec3(&self.normal),
+            self.d
+        ))
     }
 }

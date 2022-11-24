@@ -7,7 +7,7 @@ pub trait MinFunction: Clone {
         p: &str,
         shared_code: &mut Vec<String>,
         children: &[Box<dyn Primitive>],
-    ) -> String;
+    ) -> Result<String>;
 }
 
 #[derive(Clone)]
@@ -19,11 +19,14 @@ impl MinFunction for MinDefault {
         p: &str,
         shared_code: &mut Vec<String>,
         children: &[Box<dyn Primitive>],
-    ) -> String {
+    ) -> Result<String> {
         let local_p = "p";
         let min_exps = children
             .iter()
-            .map(|c| format!("    m = min(m, {});", c.expression(local_p, shared_code)))
+            .map(|c| c.expression(local_p, shared_code))
+            .collect::<Result<Vec<_>>>()?
+            .into_iter()
+            .map(|c_expr| format!("    m = min(m, {});", c_expr))
             .collect::<Vec<_>>()
             .join("\n");
         let function_name = format!("MinDefault{}", shared_code.len());
@@ -38,6 +41,6 @@ float {function_name}(vec3 {local_p}) {{
             local_p = local_p,
             min_exps = min_exps
         ));
-        format!("{}({})", function_name, p)
+        Ok(format!("{}({})", function_name, p))
     }
 }

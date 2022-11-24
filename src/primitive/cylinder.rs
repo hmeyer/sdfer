@@ -39,7 +39,7 @@ impl Cylinder {
 }
 
 impl Primitive for Cylinder {
-    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String {
+    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> Result<String> {
         if self.bounds.is_some() {
             shared_code.push(
                 r#"
@@ -60,15 +60,15 @@ float CappedCylinder(vec3 p, vec3 a, vec3 b, float r) {
             );
         }
         if let Some(ref bounds) = self.bounds {
-            format!(
+            Ok(format!(
                 "CappedCylinder({p}, {a}, {b}, {r:.8})",
                 p = p,
                 a = shader_vec3(&bounds.begin),
                 b = shader_vec3(&bounds.end),
                 r = self.radius
-            )
+            ))
         } else {
-            format!("length(({}).xy) - {:.8}", p, self.radius)
+            Ok(format!("length(({}).xy) - {:.8}", p, self.radius))
         }
     }
 }
@@ -103,7 +103,7 @@ impl RoundedCylinder {
 }
 
 impl Primitive for RoundedCylinder {
-    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String {
+    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> Result<String> {
         shared_code.push(
             r#"
 float RoundedCylinder(vec3 p, float ra, float rb, float h) {
@@ -113,10 +113,10 @@ float RoundedCylinder(vec3 p, float ra, float rb, float h) {
 "#
             .to_string(),
         );
-        format!(
+        Ok(format!(
             "RoundedCylinder({}, {:.8}, {:.8}, {:.8})",
             p, self.main_radius, self.rounding_radius, self.height
-        )
+        ))
     }
 }
 
@@ -141,7 +141,7 @@ impl Capsule {
 }
 
 impl Primitive for Capsule {
-    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String {
+    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> Result<String> {
         shared_code.push(
             r#"
 float Capsule(vec3 p, vec3 a, vec3 b, float r) {
@@ -152,12 +152,12 @@ float Capsule(vec3 p, vec3 a, vec3 b, float r) {
 "#
             .to_string(),
         );
-        format!(
+        Ok(format!(
             "Capsule({}, {}, {}, {:.8})",
             p,
             shader_vec3(&self.begin),
             shader_vec3(&self.end),
             self.radius
-        )
+        ))
     }
 }

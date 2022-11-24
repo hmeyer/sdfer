@@ -79,7 +79,8 @@ impl RenderCanvas {
         self.shader_canvas.borrow().draw();
     }
     pub fn set_primtive(&self, prim: &dyn Primitive) -> Result<(), JsValue> {
-        let shader = renderer::generate_renderer_shader(prim);
+        let shader =
+            renderer::generate_renderer_shader(prim).map_err(|e| JsValue::from(e.to_string()))?;
         info!("setting shader:\n{}", shader);
         let mut shader_canvas = self.shader_canvas.borrow_mut();
         shader_canvas.set_shader(&shader)?;

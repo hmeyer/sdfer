@@ -16,7 +16,7 @@ impl ExactBox {
 }
 
 impl Primitive for ExactBox {
-    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String {
+    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> Result<String> {
         shared_code.push(
             r#"
 float Box( vec3 p, vec3 b ) {
@@ -26,7 +26,7 @@ float Box( vec3 p, vec3 b ) {
 "#
             .to_string(),
         );
-        format!("Box({}, {})", p, shader_vec3(&self.size))
+        Ok(format!("Box({}, {})", p, shader_vec3(&self.size)))
     }
 }
 
@@ -52,7 +52,7 @@ impl RoundBox {
 }
 
 impl Primitive for RoundBox {
-    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> String {
+    fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> Result<String> {
         shared_code.push(
             r#"
 float RoundBox( vec3 p, vec3 b, float r ) {
@@ -62,11 +62,11 @@ float RoundBox( vec3 p, vec3 b, float r ) {
 "#
             .to_string(),
         );
-        format!(
+        Ok(format!(
             "RoundBox({}, {}, {:.8})",
             p,
             shader_vec3(&self.size),
             self.radius
-        )
+        ))
     }
 }
