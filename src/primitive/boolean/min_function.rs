@@ -75,16 +75,22 @@ impl MinFunction for MinExponential {
             .map(|c| c.expression(local_p, shared_code))
             .collect::<Result<Vec<_>>>()?
             .into_iter()
-            .map(|c_expr| format!("    res += exp2(-{:.8} * ({}));", self.k, c_expr))
+            .map(|c_expr| format!("    t = {}; d = min(d, t); res += exp2(-{:.8} * t);", c_expr, self.k))
             .collect::<Vec<_>>()
             .join("\n");
         let function_name = format!("MinExponential{}", shared_code.len());
         shared_code.push(format!(
             "
 float {function_name}(vec3 {local_p}) {{
+    float t = 0.0;
+    float d = 1e10;
     float res = 0.0;
 {min_exps}
-    return -log2(res) / {k:.8};
+    if (res < 10.0) {{
+        return -log2(res) / {k:.8};
+    }} else {{
+        return d;
+    }}
 }}",
             function_name = function_name,
             local_p = local_p,

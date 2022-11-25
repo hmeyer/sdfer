@@ -295,7 +295,7 @@ impl Boolean {
 impl Primitive for Boolean {
     fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> Result<String> {
         let min_function = MinDefault {};
-        let min_function = MinExponential::new(17.);
+        let min_function = MinExponential::new(100.);
         let expression = min_function.expression(p, shared_code, &self.children)?;
         let negate = if self.negate { "-" } else { "" };
         Ok(format!("{}{}", negate, expression))
