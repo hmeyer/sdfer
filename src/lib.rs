@@ -16,7 +16,7 @@ mod script_ui;
 
 #[wasm_bindgen(start)]
 pub fn start() -> Result<(), JsValue> {
-    console_log::init_with_level(Level::Debug).unwrap();
+    console_log::init_with_level(Level::Info).unwrap();
     let window = web_sys::window().unwrap();
     let document = window.document().unwrap();
     let canvas = document.get_element_by_id("canvas").unwrap();
