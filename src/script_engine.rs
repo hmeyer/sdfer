@@ -215,8 +215,9 @@ impl RhaiScriptEngine {
                 "smooth",
                 |b: &mut Box<Boolean>, k: f32| -> Result<Box<Boolean>, Box<EvalAltResult>> {
                     let mut b = b.clone();
-                    b.set_kind(BooleanKind::Polynomial(k))
+                    let f = MinPolynomial::new(k)
                         .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
+                    b.set_min_function(Box::new(f));
                     Ok(b)
                 },
             )
@@ -224,8 +225,9 @@ impl RhaiScriptEngine {
                 "smooth_cubic",
                 |b: &mut Box<Boolean>, k: f32| -> Result<Box<Boolean>, Box<EvalAltResult>> {
                     let mut b = b.clone();
-                    b.set_kind(BooleanKind::CubicPolynomial(k))
+                    let f = MinCubicPolynomial::new(k)
                         .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
+                    b.set_min_function(Box::new(f));
                     Ok(b)
                 },
             )
@@ -233,8 +235,9 @@ impl RhaiScriptEngine {
                 "smooth_root",
                 |b: &mut Box<Boolean>, k: f32| -> Result<Box<Boolean>, Box<EvalAltResult>> {
                     let mut b = b.clone();
-                    b.set_kind(BooleanKind::Root(k))
-                        .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
+                    let f =
+                        MinRoot::new(k).map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
+                    b.set_min_function(Box::new(f));
                     Ok(b)
                 },
             )
@@ -242,8 +245,9 @@ impl RhaiScriptEngine {
                 "smooth_exponential",
                 |b: &mut Box<Boolean>, k: f32| -> Result<Box<Boolean>, Box<EvalAltResult>> {
                     let mut b = b.clone();
-                    b.set_kind(BooleanKind::Exponential(k))
+                    let f = MinExponential::new(k)
                         .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
+                    b.set_min_function(Box::new(f));
                     Ok(b)
                 },
             )
@@ -251,8 +255,9 @@ impl RhaiScriptEngine {
                 "chamfer",
                 |b: &mut Box<Boolean>, k: f32| -> Result<Box<Boolean>, Box<EvalAltResult>> {
                     let mut b = b.clone();
-                    b.set_kind(BooleanKind::Chamfer(k))
+                    let f = MinChamfer::new(k)
                         .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
+                    b.set_min_function(Box::new(f));
                     Ok(b)
                 },
             )
@@ -263,11 +268,9 @@ impl RhaiScriptEngine {
                  n: i32|
                  -> Result<Box<Boolean>, Box<EvalAltResult>> {
                     let mut b = b.clone();
-                    b.set_kind(BooleanKind::Stairs {
-                        d: k,
-                        num: n as usize,
-                    })
-                    .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
+                    let f = MinStairs::new(k, n)
+                        .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
+                    b.set_min_function(Box::new(f));
                     Ok(b)
                 },
             )

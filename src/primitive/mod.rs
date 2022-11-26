@@ -64,7 +64,10 @@ mod cylinder;
 pub use cylinder::{Capsule, Cylinder, RoundedCylinder};
 
 mod boolean;
-pub use boolean::{Boolean, BooleanKind};
+pub use boolean::{
+    Boolean, MinChamfer, MinCubicPolynomial, MinDefault, MinExponential, MinFunction,
+    MinPolynomial, MinRoot, MinStairs,
+};
 
 mod transformations;
 pub use transformations::{Rotate, Scale, Translate};
