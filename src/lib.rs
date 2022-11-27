@@ -10,6 +10,7 @@ use log::Level;
 extern crate isosurface;
 extern crate nalgebra as na;
 
+mod mesh_canvas;
 mod primitive;
 mod render_canvas;
 mod renderer;
@@ -21,18 +22,21 @@ pub fn start() -> Result<(), JsValue> {
     console_log::init_with_level(Level::Info).unwrap();
     let window = web_sys::window().unwrap();
     let document = window.document().unwrap();
-    let canvas = document.get_element_by_id("shader_canvas").unwrap();
-    let canvas: web_sys::HtmlCanvasElement = canvas.dyn_into::<web_sys::HtmlCanvasElement>()?;
-    let canvas = render_canvas::RenderCanvas::new(canvas)?;
+    let rcanvas = get_canvas(&document, "shader_canvas")?;
+    let rcanvas = render_canvas::RenderCanvas::new(rcanvas)?;
+
+    let mcanvas = get_canvas(&document, "mesh_canvas")?;
+    let mcanvas = mesh_canvas::MeshCanvas::new(mcanvas)?;
+    mcanvas.draw();
 
     let new_object_callback = move |new_object: &dyn Primitive| {
-        if let Err(err) = canvas.set_primtive(new_object) {
+        if let Err(err) = rcanvas.set_primtive(new_object) {
             error!("{:?}", err);
         };
-        canvas.draw();
+        rcanvas.draw();
     };
-    let run_button = get_button(&document, "run").map_err(|e| e.to_string())?;
-    let mesh_button = get_button(&document, "mesh").map_err(|e| e.to_string())?;
+    let run_button = get_button(&document, "run")?;
+    let mesh_button = get_button(&document, "mesh")?;
     let script = document.get_element_by_id("program").unwrap();
     let script: web_sys::HtmlTextAreaElement = script.dyn_into::<web_sys::HtmlTextAreaElement>()?;
     let output = document.get_element_by_id("output").unwrap();
@@ -50,12 +54,28 @@ pub fn start() -> Result<(), JsValue> {
     Ok(())
 }
 
-fn get_button(document: &web_sys::Document, name: &str) -> Result<web_sys::HtmlButtonElement> {
+fn get_canvas(
+    document: &web_sys::Document,
+    name: &str,
+) -> Result<web_sys::HtmlCanvasElement, JsValue> {
     match document.get_element_by_id(name) {
-        Some(e) => match e.clone().dyn_into::<web_sys::HtmlButtonElement>() {
-            Ok(b) => Ok(b),
-            Err(_) => bail!("Cannot cast {:?} into HtmlButtonElement", e),
-        },
-        None => bail!("Did not find {}.", name),
+        Some(e) => e
+            .clone()
+            .dyn_into::<web_sys::HtmlCanvasElement>()
+            .map_err(|_| format!("Cannot cast {:?} into HtmlCanvasElement.", e).into()),
+        None => Err(format!("Did not find {}.", name).into()),
+    }
+}
+
+fn get_button(
+    document: &web_sys::Document,
+    name: &str,
+) -> Result<web_sys::HtmlButtonElement, JsValue> {
+    match document.get_element_by_id(name) {
+        Some(e) => e
+            .clone()
+            .dyn_into::<web_sys::HtmlButtonElement>()
+            .map_err(|_| format!("Cannot cast {:?} into HtmlButtonElement.", e).into()),
+        None => Err(format!("Did not find {}.", name).into()),
     }
 }
