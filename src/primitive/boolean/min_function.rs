@@ -8,6 +8,7 @@ pub trait MinFunction: MinFunctionClone {
         shared_code: &mut Vec<String>,
         children: &[Box<dyn Primitive>],
     ) -> Result<String>;
+    fn eval(&self, d: &[f32]) -> Result<f32>;
 }
 
 pub trait MinFunctionClone {
@@ -64,6 +65,9 @@ float {function_name}(vec3 {local_p}) {{
         ));
         Ok(format!("{}({})", function_name, p))
     }
+    fn eval(&self, d: &[f32]) -> Result<f32> {
+        Ok(d.iter().fold(1e10, |min, x| min.min(*x)))
+    }
 }
 
 #[derive(Clone)]
@@ -114,6 +118,16 @@ float {function_name}(vec3 {local_p}) {{
             k = self.k
         ));
         Ok(format!("{}({})", function_name, p))
+    }
+    fn eval(&self, d: &[f32]) -> Result<f32> {
+        if d.len() != 2 {
+            bail!(
+                "MinPolynomial requires exactly 2 children - got {}.",
+                d.len()
+            );
+        }
+        let h = (self.k - (d[0] - d[1]).abs()).max(0.0);
+        Ok(d[0].min(d[1]) - h * h * 0.25 / self.k)
     }
 }
 
@@ -167,6 +181,16 @@ float {function_name}(vec3 {local_p}) {{
         ));
         Ok(format!("{}({})", function_name, p))
     }
+    fn eval(&self, d: &[f32]) -> Result<f32> {
+        if d.len() != 2 {
+            bail!(
+                "MinCubicPolynomial requires exactly 2 children - got {}.",
+                d.len()
+            );
+        }
+        let h = (self.k - (d[0] - d[1]).abs()).max(0.0) / self.k;
+        Ok(d[0].min(d[1]) - h * h * h * self.k * (1. / 6.))
+    }
 }
 
 #[derive(Clone)]
@@ -218,6 +242,13 @@ float {function_name}(vec3 {local_p}) {{
         ));
         Ok(format!("{}({})", function_name, p))
     }
+    fn eval(&self, d: &[f32]) -> Result<f32> {
+        if d.len() != 2 {
+            bail!("MinRoot requires exactly 2 children - got {}.", d.len());
+        }
+        let h = d[0] - d[1];
+        Ok(0.5 * ((d[0] + d[1]) - (h * h + self.k).sqrt()))
+    }
 }
 
 #[derive(Clone)]
@@ -267,6 +298,12 @@ float {function_name}(vec3 {local_p}) {{
             k = self.k
         ));
         Ok(format!("{}({})", function_name, p))
+    }
+    fn eval(&self, d: &[f32]) -> Result<f32> {
+        if d.len() != 2 {
+            bail!("MinChamfer requires exactly 2 children - got {}.", d.len());
+        }
+        Ok(d[0].min(d[1]).min((d[0] - self.k + d[1]) * 0.5_f32.sqrt()))
     }
 }
 
@@ -325,6 +362,16 @@ float {function_name}(vec3 {local_p}) {{
             n = self.n
         ));
         Ok(format!("{}({})", function_name, p))
+    }
+    fn eval(&self, d: &[f32]) -> Result<f32> {
+        if d.len() != 2 {
+            bail!("MinStairs requires exactly 2 children - got {}.", d.len());
+        }
+        let s = self.k / self.n as f32;
+        let u = d[1] / self.k;
+        Ok(d[0]
+            .min(d[1])
+            .min(0.5 * ((u + d[0] + s).rem_euclid(2. * s) - s).abs()))
     }
 }
 
@@ -389,5 +436,19 @@ float {function_name}(vec3 {local_p}) {{
             k = self.k,
         ));
         Ok(format!("{}({})", function_name, p))
+    }
+    fn eval(&self, d: &[f32]) -> Result<f32> {
+        if d.len() < 2 {
+            bail!(
+                "MinExponential requires at least 2 children - got {}.",
+                d.len()
+            );
+        }
+        let res: f32 = d.iter().map(|d| (d * -self.k).exp2()).sum();
+        if res < 10.0 {
+            Ok(-(res.log2()) / self.k)
+        } else {
+            Ok(d.iter().fold(1e10, |min, x| min.min(*x)))
+        }
     }
 }

@@ -62,6 +62,14 @@ impl Primitive for Boolean {
         let negate = if self.negate { "-" } else { "" };
         Ok(format!("{}{}", negate, expression))
     }
+    fn eval(&self, p: na::Vector3<f32>) -> Result<f32> {
+        let min_d = self
+            .children
+            .iter()
+            .map(|c| c.eval(p))
+            .collect::<Result<Vec<_>>>()?;
+        return self.min_function.eval(&min_d);
+    }
 }
 
 #[derive(Clone)]
@@ -72,5 +80,8 @@ struct Negation {
 impl Primitive for Negation {
     fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> Result<String> {
         Ok(format!("-({})", self.child.expression(p, shared_code)?))
+    }
+    fn eval(&self, p: na::Vector3<f32>) -> Result<f32> {
+        return self.child.eval(p).map(|d| -d);
     }
 }

@@ -52,7 +52,7 @@ float CappedCylinder(vec3 p, vec3 a, vec3 b, float r) {
     float y = abs(paba-baba*0.5)-baba*0.5;
     float x2 = x*x;
     float y2 = y*y*baba;
-    float d = (max(x,y)<0.0)?-min(x2,y2):(((x>0.0)?x2:0.0)+((y>0.0)?y2:0.0));
+    float d = (max(x, y) < 0.0) ? -min(x2, y2) : (((x > 0.0) ? x2 : 0.0) + ((y > 0.0) ? y2 : 0.0));
     return sign(d)*sqrt(abs(d))/baba;
 }
 "#
@@ -69,6 +69,26 @@ float CappedCylinder(vec3 p, vec3 a, vec3 b, float r) {
             ))
         } else {
             Ok(format!("length(({}).xy) - {:.8}", p, self.radius))
+        }
+    }
+    fn eval(&self, p: na::Vector3<f32>) -> Result<f32> {
+        if let Some(ref bounds) = self.bounds {
+            let ba = bounds.end - bounds.begin;
+            let pa = p - bounds.begin;
+            let baba = ba.norm_squared();
+            let paba = pa.dot(&ba);
+            let x = (pa * baba - ba * paba).norm() - self.radius * baba;
+            let y = (paba - baba * 0.5).abs() - baba * 0.5;
+            let x2 = x * x;
+            let y2 = y * y * baba;
+            let d = if x.max(y) < 0.0 {
+                -(x2.min(y2))
+            } else {
+                (if x > 0.0 { x2 } else { 0.0 }) + (if y > 0.0 { y2 } else { 0.0 })
+            };
+            Ok(d.abs().sqrt().copysign(d) / baba)
+        } else {
+            Ok(p.rows(0, 2).norm() - self.radius)
         }
     }
 }
@@ -118,6 +138,14 @@ float RoundedCylinder(vec3 p, float ra, float rb, float h) {
             p, self.main_radius, self.rounding_radius, self.height
         ))
     }
+    fn eval(&self, p: na::Vector3<f32>) -> Result<f32> {
+        let dx = p.rows(0, 2).norm() - 2.0 * self.main_radius + self.rounding_radius;
+        let dy = p[2].abs() - self.height;
+        Ok(
+            dx.max(dy).min(0.0) + na::Vector2::new(dx.max(0.), dy.max(0.)).norm()
+                - self.rounding_radius,
+        )
+    }
 }
 
 #[derive(Clone)]
@@ -159,5 +187,11 @@ float Capsule(vec3 p, vec3 a, vec3 b, float r) {
             shader_vec3(&self.end),
             self.radius
         ))
+    }
+    fn eval(&self, p: na::Vector3<f32>) -> Result<f32> {
+        let pa = p - self.begin;
+        let ba = self.end - self.begin;
+        let h = (pa.dot(&ba) / ba.norm_squared()).clamp(0., 1.);
+        Ok((pa - ba * h).norm() - self.radius)
     }
 }

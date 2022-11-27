@@ -20,6 +20,9 @@ impl Primitive for Translate {
             shared_code,
         )
     }
+    fn eval(&self, p: na::Vector3<f32>) -> Result<f32> {
+        return self.primitive.eval(p - self.vector);
+    }
 }
 
 #[derive(Clone)]
@@ -46,6 +49,9 @@ impl Primitive for Rotate {
             shared_code,
         )
     }
+    fn eval(&self, p: na::Vector3<f32>) -> Result<f32> {
+        return self.primitive.eval(self.matrix * p);
+    }
 }
 
 #[derive(Clone)]
@@ -71,5 +77,8 @@ impl Primitive for Scale {
             shared_code,
         )?;
         Ok(format!("({}) * {:.8}", d, self.scale.abs().min()))
+    }
+    fn eval(&self, p: na::Vector3<f32>) -> Result<f32> {
+        return self.primitive.eval(p.component_mul(&self.scale));
     }
 }
