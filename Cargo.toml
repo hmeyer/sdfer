@@ -18,6 +18,7 @@ rhai = { version = "1.11.0", features = ["only_i32", "f32_float", "no_closure", 
 parking_lot = { features = ["wasm-bindgen"]}
 anyhow = "1.0"
 array_tool = "1.0"
+isosurface = "0.0.4"
 
 [dependencies.web-sys]
 version = "0.3.4"
