@@ -79,13 +79,13 @@ float CappedTorus(vec3 p, float ra, float rb, vec2 an) {
             }
         }
     }
-    fn eval(&self, mut p: na::Vector3<f32>) -> Result<f32> {
+    fn eval(&self, mut p: na::Vector3<f32>) -> f32 {
         match self.cap_angle {
             None => {
                 let t0 = (self.inner + self.outer) / 2.0;
                 let t1 = (self.outer - self.inner) / 2.0;
                 let q = na::Vector2::new(p.rows(0, 2).norm() - t0, p[2]);
-                Ok(q.norm() - t1)
+                q.norm() - t1
             }
             Some(a) => {
                 let ra = (self.inner + self.outer) / 2.0;
@@ -97,7 +97,7 @@ float CappedTorus(vec3 p, float ra, float rb, vec2 an) {
                 } else {
                     p.rows(0, 2).norm()
                 };
-                Ok((p.norm_squared() + ra * ra - 2.0 * ra * k).sqrt() - rb)
+                (p.norm_squared() + ra * ra - 2.0 * ra * k).sqrt() - rb
             }
         }
     }

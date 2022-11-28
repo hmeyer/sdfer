@@ -20,8 +20,8 @@ impl Primitive for Translate {
             shared_code,
         )
     }
-    fn eval(&self, p: na::Vector3<f32>) -> Result<f32> {
-        return self.primitive.eval(p - self.vector);
+    fn eval(&self, p: na::Vector3<f32>) -> f32 {
+        self.primitive.eval(p - self.vector)
     }
 }
 
@@ -49,8 +49,8 @@ impl Primitive for Rotate {
             shared_code,
         )
     }
-    fn eval(&self, p: na::Vector3<f32>) -> Result<f32> {
-        return self.primitive.eval(self.matrix * p);
+    fn eval(&self, p: na::Vector3<f32>) -> f32 {
+        self.primitive.eval(self.matrix * p)
     }
 }
 
@@ -78,7 +78,7 @@ impl Primitive for Scale {
         )?;
         Ok(format!("({}) * {:.8}", d, self.scale.abs().min()))
     }
-    fn eval(&self, p: na::Vector3<f32>) -> Result<f32> {
-        return self.primitive.eval(p.component_mul(&self.scale));
+    fn eval(&self, p: na::Vector3<f32>) -> f32 {
+        self.primitive.eval(p.component_mul(&self.scale))
     }
 }

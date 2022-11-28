@@ -25,7 +25,7 @@ impl Primitive for Plane {
             self.d
         ))
     }
-    fn eval(&self, p: na::Vector3<f32>) -> Result<f32> {
-        Ok(p.dot(&self.normal) + self.d)
+    fn eval(&self, p: na::Vector3<f32>) -> f32 {
+        p.dot(&self.normal) + self.d
     }
 }

@@ -71,7 +71,7 @@ float CappedCylinder(vec3 p, vec3 a, vec3 b, float r) {
             Ok(format!("length(({}).xy) - {:.8}", p, self.radius))
         }
     }
-    fn eval(&self, p: na::Vector3<f32>) -> Result<f32> {
+    fn eval(&self, p: na::Vector3<f32>) -> f32 {
         if let Some(ref bounds) = self.bounds {
             let ba = bounds.end - bounds.begin;
             let pa = p - bounds.begin;
@@ -86,9 +86,9 @@ float CappedCylinder(vec3 p, vec3 a, vec3 b, float r) {
             } else {
                 (if x > 0.0 { x2 } else { 0.0 }) + (if y > 0.0 { y2 } else { 0.0 })
             };
-            Ok(d.abs().sqrt().copysign(d) / baba)
+            d.abs().sqrt().copysign(d) / baba
         } else {
-            Ok(p.rows(0, 2).norm() - self.radius)
+            p.rows(0, 2).norm() - self.radius
         }
     }
 }
@@ -138,13 +138,10 @@ float RoundedCylinder(vec3 p, float ra, float rb, float h) {
             p, self.main_radius, self.rounding_radius, self.height
         ))
     }
-    fn eval(&self, p: na::Vector3<f32>) -> Result<f32> {
+    fn eval(&self, p: na::Vector3<f32>) -> f32 {
         let dx = p.rows(0, 2).norm() - 2.0 * self.main_radius + self.rounding_radius;
         let dy = p[2].abs() - self.height;
-        Ok(
-            dx.max(dy).min(0.0) + na::Vector2::new(dx.max(0.), dy.max(0.)).norm()
-                - self.rounding_radius,
-        )
+        dx.max(dy).min(0.0) + na::Vector2::new(dx.max(0.), dy.max(0.)).norm() - self.rounding_radius
     }
 }
 
@@ -188,10 +185,10 @@ float Capsule(vec3 p, vec3 a, vec3 b, float r) {
             self.radius
         ))
     }
-    fn eval(&self, p: na::Vector3<f32>) -> Result<f32> {
+    fn eval(&self, p: na::Vector3<f32>) -> f32 {
         let pa = p - self.begin;
         let ba = self.end - self.begin;
         let h = (pa.dot(&ba) / ba.norm_squared()).clamp(0., 1.);
-        Ok((pa - ba * h).norm() - self.radius)
+        (pa - ba * h).norm() - self.radius
     }
 }

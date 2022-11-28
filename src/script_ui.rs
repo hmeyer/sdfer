@@ -101,10 +101,7 @@ pub struct PrimitiveSource {
 
 impl isosurface::source::Source for PrimitiveSource {
     fn sample(&self, x: f32, y: f32, z: f32) -> f32 {
-        match self.primitive.eval(na::Vector3::new(x, y, z)) {
-            Ok(d) => d,
-            Err(_) => f32::NAN,
-        }
+        self.primitive.eval(na::Vector3::new(x, y, z))
     }
 }
 

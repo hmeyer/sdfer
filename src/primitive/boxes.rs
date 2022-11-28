@@ -28,12 +28,9 @@ float Box( vec3 p, vec3 b ) {
         );
         Ok(format!("Box({}, {})", p, shader_vec3(&self.size)))
     }
-    fn eval(&self, p: na::Vector3<f32>) -> Result<f32> {
+    fn eval(&self, p: na::Vector3<f32>) -> f32 {
         let q = v3_abs(p) - self.size;
-        Ok(
-            q.sup(&na::Vector3::new(0_f32, 0_f32, 0_f32)).norm()
-                + q[1].max(q[2]).max(q[0]).min(0.0),
-        )
+        q.sup(&na::Vector3::new(0_f32, 0_f32, 0_f32)).norm() + q[1].max(q[2]).max(q[0]).min(0.0)
     }
 }
 
@@ -76,13 +73,10 @@ float RoundBox( vec3 p, vec3 b, float r ) {
             self.radius
         ))
     }
-    fn eval(&self, p: na::Vector3<f32>) -> Result<f32> {
+    fn eval(&self, p: na::Vector3<f32>) -> f32 {
         let q = v3_abs(p) - self.size;
-        Ok(
-            q.sup(&na::Vector3::new(0_f32, 0_f32, 0_f32)).norm()
-                + q[1].max(q[2]).max(q[0]).min(0.0)
-                - self.radius,
-        )
+        q.sup(&na::Vector3::new(0_f32, 0_f32, 0_f32)).norm() + q[1].max(q[2]).max(q[0]).min(0.0)
+            - self.radius
     }
 }
 

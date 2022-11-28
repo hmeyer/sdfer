@@ -60,10 +60,10 @@ impl Primitive for Repeat {
             shared_code,
         )
     }
-    fn eval(&self, p: na::Vector3<f32>) -> Result<f32> {
+    fn eval(&self, p: na::Vector3<f32>) -> f32 {
         let rp = v3_round(p).component_div(&self.bounds);
         let rp = v3_clamp(rp, self.repeats_min, self.repeats_max);
         let p = p - self.bounds.component_mul(&rp);
-        return self.primitive.eval(p);
+        self.primitive.eval(p)
     }
 }

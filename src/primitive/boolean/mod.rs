@@ -50,8 +50,9 @@ impl Boolean {
         Boolean::new_intersection(new_children)
     }
     pub fn set_min_function(&mut self, f: Box<dyn MinFunction>) -> Result<()> {
-        // Test if this expression works for our children.
-        f.expression("p", &mut Vec::new(), &self.children)?;
+        // Test if this expression works for our number of children.
+        let test_child_d = self.children.iter().map(|_| 0_f32).collect::<Vec<_>>();
+        f.eval(&test_child_d)?;
         self.min_function = f;
         Ok(())
     }
@@ -65,13 +66,11 @@ impl Primitive for Boolean {
         let negate = if self.negate { "-" } else { "" };
         Ok(format!("{}{}", negate, expression))
     }
-    fn eval(&self, p: na::Vector3<f32>) -> Result<f32> {
-        let min_d = self
-            .children
-            .iter()
-            .map(|c| c.eval(p))
-            .collect::<Result<Vec<_>>>()?;
-        return self.min_function.eval(&min_d);
+    fn eval(&self, p: na::Vector3<f32>) -> f32 {
+        let min_d = self.children.iter().map(|c| c.eval(p)).collect::<Vec<_>>();
+        self.min_function
+            .eval(&min_d)
+            .expect("MinFunction failed despite having been tested in set_min_function before.")
     }
 }
 
@@ -84,7 +83,7 @@ impl Primitive for Negation {
     fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> Result<String> {
         Ok(format!("-({})", self.child.expression(p, shared_code)?))
     }
-    fn eval(&self, p: na::Vector3<f32>) -> Result<f32> {
-        return self.child.eval(p).map(|d| -d);
+    fn eval(&self, p: na::Vector3<f32>) -> f32 {
+        -self.child.eval(p)
     }
 }
