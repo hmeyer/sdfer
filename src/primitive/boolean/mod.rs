@@ -49,8 +49,11 @@ impl Boolean {
         }
         Boolean::new_intersection(new_children)
     }
-    pub fn set_min_function(&mut self, f: Box<dyn MinFunction>) {
+    pub fn set_min_function(&mut self, f: Box<dyn MinFunction>) -> Result<()> {
+        // Test if this expression works for our children.
+        f.expression("p", &mut Vec::new(), &self.children)?;
         self.min_function = f;
+        Ok(())
     }
 }
 

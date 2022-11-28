@@ -217,7 +217,8 @@ impl RhaiScriptEngine {
                     let mut b = b.clone();
                     let f = MinPolynomial::new(k)
                         .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
-                    b.set_min_function(Box::new(f));
+                    b.set_min_function(Box::new(f))
+                        .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
                     Ok(b)
                 },
             )
@@ -227,7 +228,8 @@ impl RhaiScriptEngine {
                     let mut b = b.clone();
                     let f = MinCubicPolynomial::new(k)
                         .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
-                    b.set_min_function(Box::new(f));
+                    b.set_min_function(Box::new(f))
+                        .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
                     Ok(b)
                 },
             )
@@ -237,7 +239,8 @@ impl RhaiScriptEngine {
                     let mut b = b.clone();
                     let f =
                         MinRoot::new(k).map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
-                    b.set_min_function(Box::new(f));
+                    b.set_min_function(Box::new(f))
+                        .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
                     Ok(b)
                 },
             )
@@ -247,7 +250,8 @@ impl RhaiScriptEngine {
                     let mut b = b.clone();
                     let f = MinExponential::new(k)
                         .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
-                    b.set_min_function(Box::new(f));
+                    b.set_min_function(Box::new(f))
+                        .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
                     Ok(b)
                 },
             )
@@ -257,7 +261,8 @@ impl RhaiScriptEngine {
                     let mut b = b.clone();
                     let f = MinChamfer::new(k)
                         .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
-                    b.set_min_function(Box::new(f));
+                    b.set_min_function(Box::new(f))
+                        .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
                     Ok(b)
                 },
             )
@@ -270,7 +275,8 @@ impl RhaiScriptEngine {
                     let mut b = b.clone();
                     let f = MinStairs::new(k, n)
                         .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
-                    b.set_min_function(Box::new(f));
+                    b.set_min_function(Box::new(f))
+                        .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
                     Ok(b)
                 },
             )
