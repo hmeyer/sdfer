@@ -478,6 +478,7 @@ dependencies = [
  "console_log",
  "getrandom",
  "isosurface",
+ "js-sys",
  "log",
  "nalgebra",
  "parking_lot",
