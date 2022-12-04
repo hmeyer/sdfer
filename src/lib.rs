@@ -8,7 +8,7 @@ extern crate log;
 use log::Level;
 
 extern crate isosurface;
-extern crate nalgebra as na;
+extern crate nalgebra_glm as glm;
 
 mod mesh_canvas;
 mod primitive;

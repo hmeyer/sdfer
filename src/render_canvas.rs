@@ -13,7 +13,7 @@ pub struct RenderCanvas {
 impl RenderCanvas {
     pub fn new(canvas: web_sys::HtmlCanvasElement) -> Result<RenderCanvas, JsValue> {
         let shader_canvas = Rc::new(RefCell::new(ShaderCanvas::new(canvas.clone())?));
-        let world_transform = Rc::new(RefCell::new(na::Matrix4::<f32>::identity()));
+        let world_transform = Rc::new(RefCell::new(glm::identity::<f32, 4>()));
         {
             let clone = shader_canvas.clone();
             let closure = Closure::<dyn FnMut(_)>::new(move |_event: web_sys::MouseEvent| {
@@ -29,11 +29,10 @@ impl RenderCanvas {
             let world_transform = world_transform.clone();
             let closure = Closure::<dyn FnMut(_)>::new(move |event: web_sys::WheelEvent| {
                 let mut world_transform = world_transform.borrow_mut();
-                world_transform.prepend_translation_mut(&na::Vector3::new(
-                    0.,
-                    0.,
-                    (-event.delta_y() / 100.0) as f32,
-                ));
+                *world_transform = glm::translate(
+                    &*world_transform,
+                    &glm::vec3(0., 0., (-event.delta_y() / 100.0) as f32),
+                );
                 let shader_canvas = shader_canvas.borrow();
                 shader_canvas
                     .uniform_matrix4fv("iWorldTransform", world_transform.transpose().as_slice());
@@ -49,14 +48,13 @@ impl RenderCanvas {
                 let mut world_transform = world_transform.borrow_mut();
                 match event.buttons() {
                     1 => {
-                        *world_transform *= na::Matrix4::<f32>::from_euler_angles(
-                            event.movement_y() as f32 / 100.0,
-                            event.movement_x() as f32 / 100.0,
-                            0.,
-                        )
+                        *world_transform =
+                            glm::rotate_x(&*world_transform, event.movement_y() as f32 / 100.0);
+                        *world_transform =
+                            glm::rotate_y(&*world_transform, event.movement_x() as f32 / 100.0);
                     }
 
-                    4 => world_transform.prepend_translation_mut(&na::Vector3::new(
+                    4 => world_transform.prepend_translation_mut(&glm::vec3(
                         -event.movement_x() as f32 / 100.0,
                         event.movement_y() as f32 / 100.0,
                         0.,
@@ -85,7 +83,7 @@ impl RenderCanvas {
         let mut shader_canvas = self.shader_canvas.borrow_mut();
         shader_canvas.set_shader(&shader)?;
         // Also reset the world transform.
-        let world_transform = na::Matrix4::<f32>::identity();
+        let world_transform = glm::identity::<f32, 4>();
         shader_canvas.uniform_matrix4fv("iWorldTransform", world_transform.as_slice());
         Ok(())
     }

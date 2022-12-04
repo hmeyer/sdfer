@@ -18,46 +18,36 @@ impl RhaiScriptEngine {
         engine.set_max_expr_depths(32, 32);
         engine.set_fast_operators(false);
         engine
-            .register_type_with_name::<na::Vector3<f32>>("Vector_f32")
-            .register_fn("Vector", |x: f32, y: f32, z: f32| {
-                na::Vector3::<f32>::new(x, y, z)
-            })
-            .register_indexer_get(|v: &mut na::Vector3<f32>, i: i32| v[i as usize])
-            .register_fn("to_string", |v: &mut na::Vector3<f32>| {
+            .register_type_with_name::<glm::Vec3>("Vector_f32")
+            .register_fn("Vector", |x: f32, y: f32, z: f32| glm::vec3(x, y, z))
+            .register_indexer_get(|v: &mut glm::Vec3, i: i32| v[i as usize])
+            .register_fn("to_string", |v: &mut glm::Vec3| {
                 format!("Vector_f32{:?}", v)
             })
-            .register_fn("norm", |v: &mut na::Vector3<f32>| v.norm())
-            .register_fn("-", |v: na::Vector3<f32>| -v)
-            .register_fn("/", |v: na::Vector3<f32>, s: f32| v / s)
-            .register_fn("*", |v: na::Vector3<f32>, s: f32| v * s)
-            .register_fn("*", |s: f32, v: na::Vector3<f32>| v * s)
-            .register_fn("+", |v: na::Vector3<f32>, w: na::Vector3<f32>| v + w)
-            .register_fn("-", |v: na::Vector3<f32>, w: na::Vector3<f32>| v - w)
-            .register_fn("*", |v: na::Vector3<f32>, w: na::Vector3<f32>| {
-                v.component_mul(&w)
-            })
-            .register_fn("/", |v: na::Vector3<f32>, w: na::Vector3<f32>| {
-                v.component_div(&w)
-            })
-            .register_fn(
-                "dot",
-                |v: &mut na::Vector3<f32>, other: na::Vector3<f32>| v.dot(&other),
-            )
-            .register_fn(
-                "cross",
-                |v: &mut na::Vector3<f32>, other: na::Vector3<f32>| v.cross(&other),
-            );
+            .register_fn("norm", |v: &mut glm::Vec3| v.norm())
+            .register_fn("-", |v: glm::Vec3| -v)
+            .register_fn("/", |v: glm::Vec3, s: f32| v / s)
+            .register_fn("*", |v: glm::Vec3, s: f32| v * s)
+            .register_fn("*", |s: f32, v: glm::Vec3| v * s)
+            .register_fn("+", |v: glm::Vec3, w: glm::Vec3| v + w)
+            .register_fn("-", |v: glm::Vec3, w: glm::Vec3| v - w)
+            .register_fn("*", |v: glm::Vec3, w: glm::Vec3| v.component_mul(&w))
+            .register_fn("/", |v: glm::Vec3, w: glm::Vec3| v.component_div(&w))
+            .register_fn("dot", |v: &mut glm::Vec3, other: glm::Vec3| v.dot(&other))
+            .register_fn("cross", |v: &mut glm::Vec3, other: glm::Vec3| {
+                v.cross(&other)
+            });
         engine
-            .register_type_with_name::<na::Vector3<i32>>("Vector_i32")
+            .register_type_with_name::<glm::I32Vec3>("Vector_i32")
             .register_fn("Vector", |x: i32, y: i32, z: i32| {
-                na::Vector3::<i32>::new(x, y, z)
+                glm::make_vec3::<i32>(&[x, y, z])
             });
         engine
             .register_type_with_name::<Box<dyn Primitive>>("Primitive")
             .register_fn(
                 "translate",
                 |prim: Box<dyn Primitive>, x: f32, y: f32, z: f32| {
-                    prim.translate(na::Vector3::new(x, y, z))
+                    prim.translate(glm::vec3(x, y, z))
                 },
             )
             .register_fn(
@@ -72,19 +62,17 @@ impl RhaiScriptEngine {
             )
             .register_fn(
                 "scale",
-                |prim: Box<dyn Primitive>, x: f32, y: f32, z: f32| {
-                    prim.scale(na::Vector3::new(x, y, z))
-                },
+                |prim: Box<dyn Primitive>, x: f32, y: f32, z: f32| prim.scale(glm::vec3(x, y, z)),
             )
             .register_fn("scale", |prim: Box<dyn Primitive>, s: f32| {
-                prim.scale(na::Vector3::new(s, s, s))
+                prim.scale(glm::vec3(s, s, s))
             })
             .register_fn(
                 "repeat",
                 |prim: Box<dyn Primitive>,
-                 bound: na::Vector3<f32>,
-                 repeats_min: na::Vector3<i32>,
-                 repeats_max: na::Vector3<i32>|
+                 bound: glm::Vec3,
+                 repeats_min: glm::I32Vec3,
+                 repeats_max: glm::I32Vec3|
                  -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
                     let r = Repeat::new(prim, bound, repeats_min, repeats_max)
                         .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;
@@ -105,7 +93,7 @@ impl RhaiScriptEngine {
             );
         engine.register_fn(
             "Plane",
-            |normal: na::Vector3<f32>, d: f32| -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
+            |normal: glm::Vec3, d: f32| -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
                 Plane::new(normal, d).map_err(|e| e.to_string().into())
             },
         );
@@ -125,8 +113,8 @@ impl RhaiScriptEngine {
             .register_fn(
                 "Cylinder",
                 |r: f32,
-                 begin: na::Vector3<f32>,
-                 end: na::Vector3<f32>|
+                 begin: glm::Vec3,
+                 end: glm::Vec3|
                  -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
                     Cylinder::new(r, begin, end).map_err(|e| e.to_string().into())
                 },
@@ -144,8 +132,8 @@ impl RhaiScriptEngine {
         engine.register_fn(
             "Capsule",
             |r: f32,
-             begin: na::Vector3<f32>,
-             end: na::Vector3<f32>|
+             begin: glm::Vec3,
+             end: glm::Vec3|
              -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
                 Capsule::new(r, begin, end).map_err(|e| e.to_string().into())
             },
@@ -173,7 +161,7 @@ impl RhaiScriptEngine {
             .register_fn(
                 "Box",
                 |x: f32, y: f32, z: f32| -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
-                    ExactBox::new(na::Vector3::new(x, y, z)).map_err(|e| e.to_string().into())
+                    ExactBox::new(glm::vec3(x, y, z)).map_err(|e| e.to_string().into())
                 },
             );
         engine
@@ -185,7 +173,7 @@ impl RhaiScriptEngine {
                  z: f32,
                  r: f32|
                  -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
-                    RoundBox::new(na::Vector3::new(x, y, z), r).map_err(|e| e.to_string().into())
+                    RoundBox::new(glm::vec3(x, y, z), r).map_err(|e| e.to_string().into())
                 },
             );
         engine
@@ -283,7 +271,7 @@ impl RhaiScriptEngine {
             .register_fn(
                 "translate",
                 |prim: &mut Box<Boolean>, x: f32, y: f32, z: f32| {
-                    prim.translate(na::Vector3::new(x, y, z))
+                    prim.translate(glm::vec3(x, y, z))
                 },
             )
             .register_fn(
@@ -298,19 +286,17 @@ impl RhaiScriptEngine {
             )
             .register_fn(
                 "scale",
-                |prim: &mut Box<Boolean>, x: f32, y: f32, z: f32| {
-                    prim.scale(na::Vector3::new(x, y, z))
-                },
+                |prim: &mut Box<Boolean>, x: f32, y: f32, z: f32| prim.scale(glm::vec3(x, y, z)),
             )
             .register_fn("scale", |prim: &mut Box<Boolean>, s: f32| {
-                prim.scale(na::Vector3::new(s, s, s))
+                prim.scale(glm::vec3(s, s, s))
             })
             .register_fn(
                 "repeat",
                 |prim: &mut Box<Boolean>,
-                 bound: na::Vector3<f32>,
-                 repeats_min: na::Vector3<i32>,
-                 repeats_max: na::Vector3<i32>|
+                 bound: glm::Vec3,
+                 repeats_min: glm::I32Vec3,
+                 repeats_max: glm::I32Vec3|
                  -> Result<Box<dyn Primitive>, Box<EvalAltResult>> {
                     let r = Repeat::new(prim.clone(), bound, repeats_min, repeats_max)
                         .map_err(|e| Box::<EvalAltResult>::from(e.to_string()))?;

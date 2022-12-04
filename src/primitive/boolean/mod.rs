@@ -66,7 +66,7 @@ impl Primitive for Boolean {
         let negate = if self.negate { "-" } else { "" };
         Ok(format!("{}{}", negate, expression))
     }
-    fn eval(&self, p: na::Vector3<f32>) -> f32 {
+    fn eval(&self, p: glm::Vec3) -> f32 {
         let min_d = self.children.iter().map(|c| c.eval(p)).collect::<Vec<_>>();
         self.min_function
             .eval(&min_d)
@@ -83,7 +83,7 @@ impl Primitive for Negation {
     fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> Result<String> {
         Ok(format!("-({})", self.child.expression(p, shared_code)?))
     }
-    fn eval(&self, p: na::Vector3<f32>) -> f32 {
+    fn eval(&self, p: glm::Vec3) -> f32 {
         -self.child.eval(p)
     }
 }

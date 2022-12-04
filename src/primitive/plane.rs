@@ -3,12 +3,12 @@ use anyhow::{bail, Result};
 
 #[derive(Clone)]
 pub struct Plane {
-    normal: na::Vector3<f32>,
+    normal: glm::Vec3,
     d: f32,
 }
 
 impl Plane {
-    pub fn new(normal: na::Vector3<f32>, d: f32) -> Result<Box<dyn Primitive>> {
+    pub fn new(normal: glm::Vec3, d: f32) -> Result<Box<dyn Primitive>> {
         if let Some(normal) = normal.try_normalize(0.) {
             return Ok(Box::new(Plane { normal, d }));
         }
@@ -25,7 +25,7 @@ impl Primitive for Plane {
             self.d
         ))
     }
-    fn eval(&self, p: na::Vector3<f32>) -> f32 {
+    fn eval(&self, p: glm::Vec3) -> f32 {
         p.dot(&self.normal) + self.d
     }
 }

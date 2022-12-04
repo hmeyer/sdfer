@@ -4,11 +4,11 @@ use anyhow::Result;
 #[derive(Clone)]
 pub struct Translate {
     primitive: Box<dyn Primitive>,
-    vector: na::Vector3<f32>,
+    vector: glm::Vec3,
 }
 
 impl Translate {
-    pub fn new(primitive: Box<dyn Primitive>, vector: na::Vector3<f32>) -> Box<Translate> {
+    pub fn new(primitive: Box<dyn Primitive>, vector: glm::Vec3) -> Box<Translate> {
         Box::new(Translate { primitive, vector })
     }
 }
@@ -20,7 +20,7 @@ impl Primitive for Translate {
             shared_code,
         )
     }
-    fn eval(&self, p: na::Vector3<f32>) -> f32 {
+    fn eval(&self, p: glm::Vec3) -> f32 {
         self.primitive.eval(p - self.vector)
     }
 }
@@ -28,16 +28,18 @@ impl Primitive for Translate {
 #[derive(Clone)]
 pub struct Rotate {
     primitive: Box<dyn Primitive>,
-    matrix: na::Matrix3<f32>,
+    matrix: glm::Mat3x3,
 }
 
 impl Rotate {
     pub fn from_euler(primitive: Box<dyn Primitive>, r: f32, p: f32, y: f32) -> Box<Rotate> {
+        let mat = glm::identity::<f32, 4>();
+        let mat = glm::rotate_x(&mat, p);
+        let mat = glm::rotate_y(&mat, y);
+        let mat = glm::rotate_z(&mat, r);
         Box::new(Rotate {
             primitive,
-            matrix: na::Matrix4::from_euler_angles(r, p, y)
-                .fixed_slice::<3, 3>(0, 0)
-                .into(),
+            matrix: mat.fixed_slice::<3, 3>(0, 0).into(),
         })
     }
 }
@@ -49,7 +51,7 @@ impl Primitive for Rotate {
             shared_code,
         )
     }
-    fn eval(&self, p: na::Vector3<f32>) -> f32 {
+    fn eval(&self, p: glm::Vec3) -> f32 {
         self.primitive.eval(self.matrix * p)
     }
 }
@@ -57,11 +59,11 @@ impl Primitive for Rotate {
 #[derive(Clone)]
 pub struct Scale {
     primitive: Box<dyn Primitive>,
-    scale: na::Vector3<f32>,
+    scale: glm::Vec3,
 }
 
 impl Scale {
-    pub fn new(primitive: Box<dyn Primitive>, scale: na::Vector3<f32>) -> Box<Scale> {
+    pub fn new(primitive: Box<dyn Primitive>, scale: glm::Vec3) -> Box<Scale> {
         Box::new(Scale { primitive, scale })
     }
 }
@@ -72,13 +74,13 @@ impl Primitive for Scale {
             &format!(
                 "({}) * {}",
                 p,
-                shader_vec3(&(na::Vector3::new(1., 1., 1.).component_div(&self.scale)))
+                shader_vec3(&(glm::vec3(1., 1., 1.).component_div(&self.scale)))
             ),
             shared_code,
         )?;
         Ok(format!("({}) * {:.8}", d, self.scale.abs().min()))
     }
-    fn eval(&self, p: na::Vector3<f32>) -> f32 {
+    fn eval(&self, p: glm::Vec3) -> f32 {
         self.primitive.eval(p.component_mul(&self.scale))
     }
 }

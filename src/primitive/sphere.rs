@@ -19,7 +19,7 @@ impl Primitive for Sphere {
     fn expression(&self, p: &str, _shared_code: &mut Vec<String>) -> Result<String> {
         Ok(format!("length({}) - {:.8}", p, self.radius))
     }
-    fn eval(&self, p: na::Vector3<f32>) -> f32 {
+    fn eval(&self, p: glm::Vec3) -> f32 {
         p.norm() - self.radius
     }
 }

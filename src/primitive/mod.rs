@@ -2,14 +2,14 @@ use anyhow::Result;
 
 pub trait Primitive: PrimitiveClone {
     fn expression(&self, p: &str, shared_code: &mut Vec<String>) -> Result<String>;
-    fn eval(&self, p: na::Vector3<f32>) -> f32;
-    fn translate(&self, vector: na::Vector3<f32>) -> Box<dyn Primitive> {
+    fn eval(&self, p: glm::Vec3) -> f32;
+    fn translate(&self, vector: glm::Vec3) -> Box<dyn Primitive> {
         Translate::new(self.clone_box(), vector)
     }
     fn rotate_euler(&self, r: f32, p: f32, y: f32) -> Box<dyn Primitive> {
         Rotate::from_euler(self.clone_box(), r, p, y)
     }
-    fn scale(&self, scale: na::Vector3<f32>) -> Box<dyn Primitive> {
+    fn scale(&self, scale: glm::Vec3) -> Box<dyn Primitive> {
         Scale::new(self.clone_box(), scale)
     }
 }
@@ -35,11 +35,11 @@ impl Clone for Box<dyn Primitive> {
     }
 }
 
-fn shader_vec3(v: &na::Vector3<f32>) -> String {
+fn shader_vec3(v: &glm::Vec3) -> String {
     format!("vec3({:.8}, {:.8}, {:.8})", v[0], v[1], v[2])
 }
 
-fn shader_mat3(m: &na::Matrix3<f32>) -> String {
+fn shader_mat3(m: &glm::Mat3x3) -> String {
     let m = m.as_slice();
     format!(
         "mat3({:.8}, {:.8}, {:.8},

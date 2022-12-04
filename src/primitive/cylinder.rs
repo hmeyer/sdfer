@@ -3,8 +3,8 @@ use anyhow::{bail, Result};
 
 #[derive(Clone)]
 struct CylinderBounds {
-    begin: na::Vector3<f32>,
-    end: na::Vector3<f32>,
+    begin: glm::Vec3,
+    end: glm::Vec3,
 }
 
 #[derive(Clone)]
@@ -17,11 +17,7 @@ impl Cylinder {
     pub fn new_infinite(radius: f32) -> Result<Box<dyn Primitive>> {
         Cylinder::new_impl(radius, None)
     }
-    pub fn new(
-        radius: f32,
-        begin: na::Vector3<f32>,
-        end: na::Vector3<f32>,
-    ) -> Result<Box<dyn Primitive>> {
+    pub fn new(radius: f32, begin: glm::Vec3, end: glm::Vec3) -> Result<Box<dyn Primitive>> {
         Cylinder::new_impl(radius, Some(CylinderBounds { begin, end }))
     }
     fn new_impl(radius: f32, bounds: Option<CylinderBounds>) -> Result<Box<dyn Primitive>> {
@@ -71,7 +67,7 @@ float CappedCylinder(vec3 p, vec3 a, vec3 b, float r) {
             Ok(format!("length(({}).xy) - {:.8}", p, self.radius))
         }
     }
-    fn eval(&self, p: na::Vector3<f32>) -> f32 {
+    fn eval(&self, p: glm::Vec3) -> f32 {
         if let Some(ref bounds) = self.bounds {
             let ba = bounds.end - bounds.begin;
             let pa = p - bounds.begin;
@@ -138,26 +134,22 @@ float RoundedCylinder(vec3 p, float ra, float rb, float h) {
             p, self.main_radius, self.rounding_radius, self.height
         ))
     }
-    fn eval(&self, p: na::Vector3<f32>) -> f32 {
+    fn eval(&self, p: glm::Vec3) -> f32 {
         let dx = p.rows(0, 2).norm() - 2.0 * self.main_radius + self.rounding_radius;
         let dy = p[2].abs() - self.height;
-        dx.max(dy).min(0.0) + na::Vector2::new(dx.max(0.), dy.max(0.)).norm() - self.rounding_radius
+        dx.max(dy).min(0.0) + glm::vec2(dx.max(0.), dy.max(0.)).norm() - self.rounding_radius
     }
 }
 
 #[derive(Clone)]
 pub struct Capsule {
     radius: f32,
-    begin: na::Vector3<f32>,
-    end: na::Vector3<f32>,
+    begin: glm::Vec3,
+    end: glm::Vec3,
 }
 
 impl Capsule {
-    pub fn new(
-        radius: f32,
-        begin: na::Vector3<f32>,
-        end: na::Vector3<f32>,
-    ) -> Result<Box<dyn Primitive>> {
+    pub fn new(radius: f32, begin: glm::Vec3, end: glm::Vec3) -> Result<Box<dyn Primitive>> {
         if radius <= 0. {
             bail!("radius should be positive (was {}).", radius);
         }
@@ -185,7 +177,7 @@ float Capsule(vec3 p, vec3 a, vec3 b, float r) {
             self.radius
         ))
     }
-    fn eval(&self, p: na::Vector3<f32>) -> f32 {
+    fn eval(&self, p: glm::Vec3) -> f32 {
         let pa = p - self.begin;
         let ba = self.end - self.begin;
         let h = (pa.dot(&ba) / ba.norm_squared()).clamp(0., 1.);
