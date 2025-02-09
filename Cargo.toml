@@ -1,6 +1,6 @@
 [package]
 name = "sdfer"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["Henning Meyer <tutmann@gmail.com>"]
 edition = "2018"
 
@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 shadercanvas = "0.0.10"
-wasm-bindgen = "0.2.83"
+wasm-bindgen = "0.2.100"
 log = "0.4"
 console_log = { version = "0.2", features = ["color"], optional = true }
 nalgebra-glm = "0.17"
