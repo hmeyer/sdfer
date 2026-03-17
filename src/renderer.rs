@@ -1,6 +1,5 @@
 use super::Primitive;
 use anyhow::Result;
-extern crate array_tool;
 use array_tool::vec::Uniq;
 
 pub fn generate_renderer_shader(obj: &dyn Primitive) -> Result<String> {

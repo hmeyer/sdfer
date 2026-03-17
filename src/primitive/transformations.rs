@@ -39,7 +39,7 @@ impl Rotate {
         let mat = glm::rotate_z(&mat, r);
         Box::new(Rotate {
             primitive,
-            matrix: mat.fixed_slice::<3, 3>(0, 0).into(),
+            matrix: mat.fixed_view::<3, 3>(0, 0).into(),
         })
     }
 }

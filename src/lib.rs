@@ -1,13 +1,9 @@
 use crate::primitive::Primitive;
-use anyhow::{bail, Result};
+use anyhow::Result;
+use log::{error, Level};
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
-#[macro_use]
-extern crate log;
-use log::Level;
-
-extern crate isosurface;
 extern crate nalgebra_glm as glm;
 
 mod mesh_canvas;

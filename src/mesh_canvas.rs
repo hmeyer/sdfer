@@ -1,5 +1,5 @@
 use anyhow::{bail, Result};
-use js_sys;
+use log::info;
 use std::f32::consts::PI;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
@@ -140,7 +140,7 @@ impl MeshCanvas {
         // gl.bind_buffer(WebGl2RenderingContext::ARRAY_BUFFER, Some(&color_buffer));
         // set_colors(&gl);
 
-        let mut result = MeshCanvas {
+        let result = MeshCanvas {
             canvas,
             gl,
             program,
@@ -182,14 +182,14 @@ impl MeshCanvas {
                 Some(&self.position_buffer),
             );
 
-            let numComponents = 3;
+            let num_components = 3;
             let normalize = false;
             let stride = 0;
             let offset = 0;
 
             self.gl.vertex_attrib_pointer_with_i32(
                 self.position_location as u32,
-                numComponents,
+                num_components,
                 WebGl2RenderingContext::FLOAT,
                 normalize,
                 stride,
@@ -205,14 +205,14 @@ impl MeshCanvas {
                 Some(&self.normal_buffer),
             );
 
-            let numComponents = 3;
+            let num_components = 3;
             let normalize = false;
             let stride = 0;
             let offset = 0;
 
             self.gl.vertex_attrib_pointer_with_i32(
                 self.normal_location as u32,
-                numComponents,
+                num_components,
                 WebGl2RenderingContext::FLOAT,
                 normalize,
                 stride,
@@ -220,16 +220,16 @@ impl MeshCanvas {
             );
         }
 
-        let fieldOfView = (60. * PI) / 180.; // in radians
-        let aspect = self.canvas.width() as f32 / self.canvas.height() as f32;
-        let zNear = 1.0;
-        let zFar = 2000.0;
+        let field_of_view = (60. * PI) / 180.; // in radians
+        let _aspect = self.canvas.width() as f32 / self.canvas.height() as f32;
+        let z_near = 1.0;
+        let z_far = 2000.0;
         let projection_matrix = glm::perspective_fov(
-            fieldOfView,
+            field_of_view,
             self.canvas.width() as f32,
             self.canvas.height() as f32,
-            zNear,
-            zFar,
+            z_near,
+            z_far,
         );
         let eye = glm::vec3(200., 50., -500.);
         let target = glm::vec3(-5.6, -13.1, 0.);

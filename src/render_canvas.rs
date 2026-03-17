@@ -1,5 +1,6 @@
 use super::renderer;
 use super::Primitive;
+use log::debug;
 use shadercanvas::ShaderCanvas;
 use std::cell::RefCell;
 use std::rc::Rc;

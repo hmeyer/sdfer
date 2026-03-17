@@ -1,5 +1,6 @@
 use super::script_engine::ScriptEngine;
 use super::Primitive;
+use log::info;
 use std::cell::RefCell;
 use std::rc::Rc;
 use wasm_bindgen::prelude::*;
@@ -17,7 +18,7 @@ impl ScriptUI {
         run_button: HtmlButtonElement,
         mesh_button: HtmlButtonElement,
         mut engine: E,
-        on_new_object_callback: impl Fn(&(dyn Primitive)) + 'static,
+        on_new_object_callback: impl Fn(&dyn Primitive) + 'static,
     ) -> Result<Rc<RefCell<ScriptUI>>, JsValue> {
         connect_output_to_engine(&output_area, &mut engine);
         let engine = engine;
@@ -46,7 +47,7 @@ fn register_run_callback<E: ScriptEngine + 'static>(
     code_area: &HtmlTextAreaElement,
     run_button: &HtmlButtonElement,
     engine: E,
-    on_new_object_callback: impl Fn(&(dyn Primitive)) + 'static,
+    on_new_object_callback: impl Fn(&dyn Primitive) + 'static,
 ) -> Result<(), JsValue> {
     let code_area = code_area.clone();
     let ui = ui.clone();

@@ -66,8 +66,8 @@ pub use cylinder::{Capsule, Cylinder, RoundedCylinder};
 
 mod boolean;
 pub use boolean::{
-    Boolean, MinChamfer, MinCubicPolynomial, MinDefault, MinExponential, MinFunction,
-    MinPolynomial, MinRoot, MinStairs,
+    Boolean, MinChamfer, MinCubicPolynomial, MinExponential, MinFunction, MinPolynomial, MinRoot,
+    MinStairs,
 };
 
 mod transformations;
